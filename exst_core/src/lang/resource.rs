@@ -10,6 +10,8 @@ use std::io;
 use std::collections::HashMap;
 use std::fs;
 use std::path;
+use std::env;
+use std::io::Read;
 
 ///////////////////////////////////////////////////////////
 /// スクリプトの呼び出しスタック
@@ -116,6 +118,15 @@ pub trait Resources {
     /// # Return Values
     /// 対応するリソース
     fn get_token_iterator(&self, resource_name: &String) -> Result<Box<dyn TokenIterator>,ResourceErrorReason>;
+
+    /// 文字列としてリソースを取得する
+    /// 
+    /// # Arguments
+    /// * resource_name - リソース名
+    /// 
+    /// # Return Values
+    /// 対応するリソース
+    fn get_string(&self, resource_name: &String) -> Result<String,ResourceErrorReason>;
 }
 
 /// Read TraitからTokenIteratorを生成して返す
@@ -142,6 +153,7 @@ fn create_token_iterator<'a, R>(resource_name: &String, read: R) -> Result<Box<d
 /// リソース名は、以下の形式で指定する
 /// * ':'で始まるリソース名 - `project_root`以下の相対パスとして解釈してそのファイル内容を取得する
 /// * '$'で始まるリソース名 - `add_resource`で追加した文字列リソースを取得
+/// * '&'で始まるリソース名 - ２文字目以降を環境変数名として環境変数から取得する
 /// * '%STDIN' - 標準入力を取得
 /// * 上記以外 - ファイルシステムのパスと解釈してそのファイルの内容を取得
 /// 
@@ -217,10 +229,81 @@ impl Resources for StdResources {
                             Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
                         }
                     },
+                    '&' => {
+                        let name: String = resource_name.chars().skip(1).collect();
+                        match env::var(name) {
+                            Result::Ok(v) => {
+                                create_token_iterator(resource_name, CharReaderFromString::new(v))
+                            },
+                            Result::Err(_) => {
+                                Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
+                            },
+                        }
+                    }
                     _ => {
                         //システムのファイルパスと解釈して、ファイルを取得
                         let f = fs::OpenOptions::new().read(true).open(resource_name)?;
                         create_token_iterator(resource_name, f)
+                    },
+                }
+            },
+            None => {
+                Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
+            },
+        }
+    }
+
+    /// 文字列リソースを取得
+    fn get_string(&self, resource_name: &String) -> Result<String,ResourceErrorReason> {
+        match resource_name.chars().nth(0) {
+            Some(first_char) => {
+                match first_char {
+                    ':' => {
+                        //プロジェクトルートからの相対パス
+                        let p = path::Path::new(&self.project_root).join(path::Path::new(resource_name.get(1..).unwrap()));
+                        let mut f = fs::OpenOptions::new().read(true).open(p)?;
+                        let mut out = String::new();
+                        f.read_to_string(&mut out)?;
+                        Result::Ok(out)
+                    },
+                    '$' => {
+                        //内部で保持している文字列Mapから取得
+                        match self.internal_resource.get(resource_name) {
+                            Some(value) => {
+                                Result::Ok(value.clone())
+                            },
+                            None => {
+                                Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
+                            },
+                        }
+                    },
+                    '%' => {
+                        //標準入力など
+                        if resource_name == "%STDIN" {
+                            let mut out = String::new();
+                            io::stdin().read_to_string(&mut out)?;
+                            Result::Ok(out)
+                        } else {
+                            Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
+                        }
+                    },
+                    '&' => {
+                        let name: String = resource_name.chars().skip(1).collect();
+                        match env::var(name) {
+                            Result::Ok(v) => {
+                                Result::Ok(v)
+                            },
+                            Result::Err(_) => {
+                                Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
+                            },
+                        }
+                    }
+                    _ => {
+                        //システムのファイルパスと解釈して、ファイルを取得
+                        let mut f = fs::OpenOptions::new().read(true).open(resource_name)?;
+                        let mut out = String::new();
+                        f.read_to_string(&mut out)?;
+                        Result::Ok(out)
                     },
                 }
             },
