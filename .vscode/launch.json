@@ -1,0 +1,72 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug exst core",
+            "cargo": {
+                "args": [
+                    "test",
+                ],
+                "filter": {
+                    "name": "exst_core",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug exst repl",
+            "cargo": {
+                "args": [
+                    "test",
+                ],
+                "filter": {
+                    "name": "exst_repl",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug exst base cmd",
+            "cargo": {
+                "args": [
+                    "test",
+                ],
+                "filter": {
+                    "name": "exst_base_cmd",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug ftdi thin wrapper",
+            "cargo": {
+                "args": [
+                    "test",
+                ],
+                "filter": {
+                    "name": "exst_ftdi_thin_wrapper",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+    ]
+}

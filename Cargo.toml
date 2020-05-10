@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+       "exst_core",
+       "exst_repl",
+       "exst_base_cmd",
+       "ftdi_thin_wrapper",
+]
