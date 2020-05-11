@@ -3,6 +3,6 @@
 members = [
        "exst_core",
        "exst_repl",
-       "exst_base_cmd",
+       "exst_cli",
        "ftdi_thin_wrapper",
 ]

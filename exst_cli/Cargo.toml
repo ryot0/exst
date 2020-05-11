@@ -1,5 +1,5 @@
 [package]
-name = "exst_base_cmd"
+name = "exst_cli"
 version = "0.1.0"
 authors = ["ryoto naruse <naruse.com@gmail.com>"]
 edition = "2018"
