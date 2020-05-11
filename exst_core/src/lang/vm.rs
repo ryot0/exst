@@ -20,7 +20,7 @@
 //! 
 //!     //実行スクリプトを登録
 //!     let mut r = StdResources::new(String::from("this"));
-//!     r.add_resource(String::from("$"), String::from("1 2 + 3 +"));
+//!     r.add_resource(String::from(""), String::from("1 2 + 3 +"));
 //!
 //!     //VMの初期化
 //!     let s = r.get_token_iterator(&String::from("$")).unwrap();
@@ -616,7 +616,7 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$"), String::from("1 \"2\" 3"));
+        r.add_resource(String::from(""), String::from("1 \"2\" 3"));
 
         //VMの初期化と実行
         let s = r.get_token_iterator(&String::from("$")).unwrap();
@@ -637,7 +637,7 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$"), String::from("1 \"2\" 3"));
+        r.add_resource(String::from(""), String::from("1 \"2\" 3"));
 
         //VMの初期化と実行
         let s = r.get_token_iterator(&String::from("$")).unwrap();
@@ -680,7 +680,7 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$"), String::from("1 2 + 3 +"));
+        r.add_resource(String::from(""), String::from("1 2 + 3 +"));
 
         //VMの初期化と実行
         let s = r.get_token_iterator(&String::from("$")).unwrap();
@@ -703,9 +703,9 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$1"), String::from("1 2 + 3 +")); //6
-        r.add_resource(String::from("$2"), String::from("2 3 + 4 +")); //9
-        r.add_resource(String::from("$3"), String::from("1 + +")); //6 + 9 + 1 = 16
+        r.add_resource(String::from("1"), String::from("1 2 + 3 +")); //6
+        r.add_resource(String::from("2"), String::from("2 3 + 4 +")); //9
+        r.add_resource(String::from("3"), String::from("1 + +")); //6 + 9 + 1 = 16
 
         //VMの初期化と実行
         let s1 = r.get_token_iterator(&String::from("$1")).unwrap();
@@ -732,10 +732,10 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$1"), String::from("1 +")); //1 + x
-        r.add_resource(String::from("$2"), String::from("2 w1 +")); //2 + ( 1 + x )
-        r.add_resource(String::from("$3"), String::from("3 w2 +")); //3 + ( 2 + ( 1 + x ) )
-        r.add_resource(String::from("$4"), String::from("4 w3")); //3 + ( 2 + ( 1 + 4 ) ) = 10
+        r.add_resource(String::from("1"), String::from("1 +")); //1 + x
+        r.add_resource(String::from("2"), String::from("2 w1 +")); //2 + ( 1 + x )
+        r.add_resource(String::from("3"), String::from("3 w2 +")); //3 + ( 2 + ( 1 + x ) )
+        r.add_resource(String::from("4"), String::from("4 w3")); //3 + ( 2 + ( 1 + 4 ) ) = 10
 
         //VMの初期化と実行
         let w1 = r.get_token_iterator(&String::from("$1")).unwrap();
@@ -791,8 +791,8 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$1"), String::from("1 1 +"));
-        r.add_resource(String::from("$2"), String::from("2 w1 +")); 
+        r.add_resource(String::from("1"), String::from("1 1 +"));
+        r.add_resource(String::from("2"), String::from("2 w1 +")); 
 
         //VMの初期化と実行
         let w1 = r.get_token_iterator(&String::from("$1")).unwrap();
@@ -832,10 +832,10 @@ mod tests {
 
         //実行スクリプトを登録
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource(String::from("$1"), String::from("1 +")); //1 + x
-        r.add_resource(String::from("$2"), String::from("2 w1 trap +")); //2 + ( 1 + x )
-        r.add_resource(String::from("$3"), String::from("3 w2 +")); //3 + ( 2 + ( 1 + x ) )
-        r.add_resource(String::from("$4"), String::from("4 w3")); //3 + ( 2 + ( 1 + 4 ) ) = 10
+        r.add_resource(String::from("1"), String::from("1 +")); //1 + x
+        r.add_resource(String::from("2"), String::from("2 w1 trap +")); //2 + ( 1 + x )
+        r.add_resource(String::from("3"), String::from("3 w2 +")); //3 + ( 2 + ( 1 + x ) )
+        r.add_resource(String::from("4"), String::from("4 w3")); //3 + ( 2 + ( 1 + 4 ) ) = 10
 
         //VMの初期化と実行
         let w1 = r.get_token_iterator(&String::from("$1")).unwrap();

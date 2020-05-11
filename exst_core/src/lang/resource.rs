@@ -180,11 +180,11 @@ impl StdResources {
     /// 文字列としてリソースを追加する
     /// 
     /// # Arguments
-    /// * name - リソース名。'$'で始まるも文字列を指定する必要があるが、それ以外のパターンでもエラーにはならず、そのリソースは取得できないだけ
+    /// * name - リソース名。先頭の$は自動的に付与されるため、不要
     /// * value - リソースの実態
     /// 
     pub fn add_resource(&mut self, name: String, value: String) {
-        self.internal_resource.insert(name, value);
+        self.internal_resource.insert(String::from("$") + &name, value);
     }
 }
 impl Resources for StdResources {
@@ -362,8 +362,8 @@ mod tests {
     fn test_std_resources() {
 
         let mut r = StdResources::new(String::from("this"));
-        r.add_resource("$A".to_string(), "a b c".to_string());
-        r.add_resource("$B".to_string(), "b c d".to_string());
+        r.add_resource("A".to_string(), "a b c".to_string());
+        r.add_resource("B".to_string(), "b c d".to_string());
 
         //$**で検索
         let mut itr = r.get_token_iterator(&"$A".to_string()).unwrap();
