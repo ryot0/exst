@@ -443,6 +443,9 @@ impl<T,E,R> Vm<T,E,R>
         while let CodeAddress(Address::Entity(_)) = self.program_counter {
             let inst = self.code_buffer.get(self.program_counter)?;
             self.apply_instruction(inst)?;
+            if self.execution_state != VmExecutionState::CodeExecution {
+                break;
+            }
         }
         self.execution_state = VmExecutionState::TokenIteration;
         Result::Ok(())
