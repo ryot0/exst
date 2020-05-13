@@ -183,6 +183,27 @@ impl fmt::Display for ReturnStackAddress {
 }
 
 ///////////////////////////////////////////////////////////
+/// データスタック領域のアドレス
+/// 
+#[derive(Debug,Clone,Copy,Eq,PartialEq,PartialOrd,Ord)]
+pub struct DataStackAddress(pub usize);
+impl From<usize> for DataStackAddress {
+    fn from(v: usize) -> Self {
+        DataStackAddress(v)
+    }
+}
+impl Default for DataStackAddress {
+    fn default() -> Self {
+        DataStackAddress(0)
+    }
+}
+impl fmt::Display for DataStackAddress {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "DataStackAddress({})", self.0)
+    }
+}
+
+///////////////////////////////////////////////////////////
 /// 環境スタックの相対アドレス
 /// 
 #[derive(Debug,Clone,Copy,Eq,PartialEq,PartialOrd,Ord)]
@@ -245,6 +266,64 @@ impl CallFrame {
 impl fmt::Display for CallFrame {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "CallFrame({},{})", self.return_address, self.stack_address)
+    }
+}
+
+///////////////////////////////////////////////////////////
+/// ロングジャンプの時に保存するフレーム
+/// 
+#[derive(Debug,Clone,Copy,Default,Eq,PartialEq)]
+pub struct LongJumpFrame {
+    /// 戻り先のコードアドレス
+    return_address: CodeAddress,
+    /// リターンスタックの戻り先アドレス
+    return_stack_address: ReturnStackAddress,
+    /// 環境スタックの戻り先アドレス
+    env_stack_address: EnvironmentStackAddress,
+    /// データスタックの戻り先アドレス
+    data_stack_address: DataStackAddress,
+}
+impl LongJumpFrame {
+
+    /// コンストラクタ
+    /// 
+    /// # Arguments
+    /// * return_address - 戻り先のコードアドレス
+    /// * return_stack_address - 戻り先のリターンスタックアドレス
+    /// * env_stack_address - 戻り先の環境スタックアドレス
+    /// * data_stack_address - 戻り先の環境スタックのアドレス
+    pub fn new(return_address: CodeAddress, return_stack_address: ReturnStackAddress, env_stack_address: EnvironmentStackAddress, data_stack_address: DataStackAddress) -> Self {
+        LongJumpFrame {
+            return_address,
+            return_stack_address,
+            env_stack_address,
+            data_stack_address,
+        }
+    }
+
+    /// リターンアドレスを取得
+    pub fn return_address(&self) -> CodeAddress {
+        self.return_address
+    }
+
+    /// 環境スタックアドレスを取得
+    pub fn return_stack_address(&self) -> ReturnStackAddress {
+        self.return_stack_address
+    }
+    
+    /// 環境スタックアドレスを取得
+    pub fn env_stack_address(&self) -> EnvironmentStackAddress {
+        self.env_stack_address
+    }
+
+    /// 環境スタックアドレスを取得
+    pub fn data_stack_address(&self) -> DataStackAddress {
+        self.data_stack_address
+    }
+}
+impl fmt::Display for LongJumpFrame {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LongJumpFrame({},{},{},{})", self.return_address, self.return_stack_address, self.env_stack_address, self.data_stack_address)
     }
 }
 
@@ -375,6 +454,8 @@ pub enum Instruction<T,V,E>
     SetJump(CodeAddress),
     /// LongJump命令 - 直近のSetJumpされた場所へジャンプ
     LongJump,
+    /// PopJump命令 - LongJumpスタックからPop
+    PopJump,
 }
 impl<T,V,E> Default for Instruction<T,V,E>
     where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
@@ -400,6 +481,7 @@ impl<T,V,E> std::clone::Clone for Instruction<T,V,E>
             Self::Exec => Self::Exec,
             Self::SetJump(ref a) => Self::SetJump(a.clone()),
             Self::LongJump => Self::LongJump,
+            Self::PopJump => Self::PopJump,
         }
     }
 }
@@ -421,6 +503,7 @@ impl<T,V,E> fmt::Display for Instruction<T,V,E>
             Self::Exec => write!(f, "Exec"),
             Self::SetJump(a) => write!(f, "SetJump({})", a),
             Self::LongJump => write!(f, "LongJump"),
+            Self::PopJump => write!(f, "PopJump"),
         }
     }
 }

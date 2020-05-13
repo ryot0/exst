@@ -471,8 +471,11 @@ impl<T> DataStack<T> {
     pub fn roll(&mut self, pos: usize) -> Result<(),DataStackErrorReason> {
         self.0.roll(pos).map_err(From::from)
     }
-    pub fn here(&self) -> usize {
+    pub fn here(&self) -> DataStackAddress {
         From::from(self.0.here())
+    }
+    pub fn rollback(&mut self, address: DataStackAddress) -> Result<(),DataStackErrorReason> {
+        self.0.roll(address.0).map_err(From::from)
     }
 }
 impl<T> fmt::Display for DataStack<T> 
@@ -641,17 +644,72 @@ impl ReturnStack {
     pub fn pop(&mut self) -> Result<CallFrame,ReturnStackErrorReason> {
         self.0.pop().map_err(From::from)
     }
-    pub fn here(&self) -> usize {
+    pub fn here(&self) -> ReturnStackAddress {
         From::from(self.0.here())
     }
     pub fn get(&self, address: ReturnStackAddress) -> Result<CallFrame,ReturnStackErrorReason> {
         self.0.get(address.0).map_err(From::from)
+    }
+    pub fn rollback(&mut self, address: ReturnStackAddress) -> Result<(),ReturnStackErrorReason> {
+        self.0.roll(address.0).map_err(From::from)
     }
 }
 impl fmt::Display for ReturnStack
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ReturnStack{}", self.0)
+    }
+}
+
+///////////////////////////////////////////////////////////
+/// LongJumpStackのエラー
+/// 
+/// `BufferErrorReason`のラッパー
+/// 
+#[derive(Debug,Clone,Copy)]
+pub enum LongJumpStackErrorReason {
+    BufferAccessError(BufferErrorReason),
+}
+impl From<BufferErrorReason> for LongJumpStackErrorReason {
+    fn from(err: BufferErrorReason) -> Self {
+        LongJumpStackErrorReason::BufferAccessError(err)
+   }
+}
+///////////////////////////////////////////////////////////
+/// LongJumpStack
+/// 
+/// `BufferMemory`のラッパー
+/// 
+pub struct LongJumpStack(BufferMemory<LongJumpFrame>);
+impl LongJumpStack {
+    pub fn new() -> Self {
+        LongJumpStack(
+            BufferMemory::new()
+        )
+    }
+    pub fn peek(&self) -> Result<LongJumpFrame,LongJumpStackErrorReason> {
+        self.0.peek().map_err(From::from)
+    }
+    pub fn push(&mut self, return_address: CodeAddress, return_stack_address: ReturnStackAddress, env_stack_address: EnvironmentStackAddress, data_stack_address: DataStackAddress) {
+        self.0.push(LongJumpFrame::new(return_address, return_stack_address, env_stack_address, data_stack_address));
+    }
+    pub fn pop(&mut self) -> Result<LongJumpFrame,LongJumpStackErrorReason> {
+        self.0.pop().map_err(From::from)
+    }
+    pub fn here(&self) -> usize {
+        From::from(self.0.here())
+    }
+    pub fn get(&self, address: ReturnStackAddress) -> Result<LongJumpFrame,LongJumpStackErrorReason> {
+        self.0.get(address.0).map_err(From::from)
+    }
+    pub fn rollback(&mut self, address: ReturnStackAddress) -> Result<(),LongJumpStackErrorReason> {
+        self.0.roll(address.0).map_err(From::from)
+    }
+}
+impl fmt::Display for LongJumpStack
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LongJumpStack{}", self.0)
     }
 }
 

@@ -211,7 +211,7 @@ fn dump_env_stack<V: VmManipulation>(v: &V, base: EnvironmentStackAddress, end_p
 pub fn dump_env<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result {
     writeln!(f, "ReturnStack[")?;
     let rs = v.return_stack();
-    for i in 0 .. rs.here() {
+    for i in 0 .. rs.here().0 {
         let current = rs.get(From::from(i)).unwrap();
         let next_adr = match rs.get(From::from(i + 1)) {
             Result::Ok(next_call_frame) => next_call_frame.stack_address().0,

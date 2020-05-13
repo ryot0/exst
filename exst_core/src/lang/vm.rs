@@ -64,6 +64,8 @@ pub enum VmErrorReason<E> {
     EnvironmentStackAccessError(EnvironmentStackErrorReason),
     /// コントロールフロースタックのアクセスエラー
     ControlflowStackAccessError(ControlflowStackErrorReason),
+    /// ロングジャンプスタックのアクセスエラー
+    LongJumpStackAccessError(LongJumpStackErrorReason),
     /// ワード辞書のエラー
     WordError(WordErrorReason),
     /// トークン解析時のエラー
@@ -105,6 +107,11 @@ impl<E> From<EnvironmentStackErrorReason> for VmErrorReason<E> {
 impl<E> From<ControlflowStackErrorReason> for VmErrorReason<E> {
     fn from(e: ControlflowStackErrorReason) -> Self {
         Self::ControlflowStackAccessError(e)
+    }
+}
+impl<E> From<LongJumpStackErrorReason> for VmErrorReason<E> {
+    fn from(e: LongJumpStackErrorReason) -> Self {
+        Self::LongJumpStackAccessError(e)
     }
 }
 impl<E> From<WordErrorReason> for VmErrorReason<E> {
@@ -278,6 +285,7 @@ pub struct Vm<T,E,R>
     return_stack: ReturnStack,
     env_stack: EnvironmentStack<T>,
     controlflow_stack: ControlflowStack<T>,
+    long_jump_stack: LongJumpStack,
     code_buffer: CodeBuffer<T,Self,VmErrorReason<E>>,
     data_buffer: DataBuffer<T>,
     program_counter: CodeAddress,
@@ -309,6 +317,7 @@ impl<T,E,R> Vm<T,E,R>
             return_stack: ReturnStack::new(),
             env_stack: EnvironmentStack::new(),
             controlflow_stack: ControlflowStack::new(),
+            long_jump_stack: LongJumpStack::new(),
             code_buffer: CodeBuffer::new(),
             data_buffer: DataBuffer::new(),
             program_counter: Default::default(),
@@ -368,15 +377,16 @@ impl<T,E,R> Vm<T,E,R>
                 self.program_counter = self.program_counter.next();
             },
             Instruction::Branch(adr) => {
-                let top = self.data_stack_mut().pop()?;
+                let top = self.data_stack.pop()?;
                 if Value::IntValue(0) == *top {
                     self.program_counter = self.program_counter.next();
                 } else {
+                    //stack topが０以外の場合、分岐
                     self.program_counter = adr;
                 }
             },
             Instruction::Exec => {
-                let top = self.data_stack_mut().pop()?;
+                let top = self.data_stack.pop()?;
                 if let Value::CodeAddress(adr) = *top {
                     //環境を退避して、オペランドのアドレスにジャンプ
                     self.return_stack.push(self.program_counter.next(), self.env_stack.here());
@@ -385,12 +395,20 @@ impl<T,E,R> Vm<T,E,R>
                     return Result::Err(VmErrorReason::InstructionError("Exec"));
                 }
             },
-            Instruction::SetJump(_) => {
-                unimplemented!();
+            Instruction::SetJump(adr) => {
+                self.long_jump_stack.push(adr, self.return_stack.here(), self.env_stack.here(), self.data_stack.here());
+                self.program_counter = self.program_counter.next();
             },
             Instruction::LongJump => {
-                unimplemented!();
+                let top = self.long_jump_stack.pop()?;
+                self.program_counter = top.return_address();
+                self.return_stack.rollback(top.return_stack_address())?;
+                self.env_stack.rollback(top.env_stack_address())?;
+                self.data_stack.rollback(top.data_stack_address())?;
             },
+            Instruction::PopJump => {
+                self.long_jump_stack.pop()?;
+            }
         }
         Result::Ok(())
     }
