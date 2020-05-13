@@ -367,6 +367,14 @@ pub enum Instruction<T,V,E>
     Trap(TrapReason),
     /// デバッグ用のラベル
     DebugLabel(DebugLabel),
+    /// Branch命令 - 条件分岐。stack topが0以外の場合、分岐する
+    Branch(CodeAddress),
+    /// stack topのCodeAddressを呼び出す
+    Exec,
+    /// SetJump命令 - LongJumpのジャンプ先を登録
+    SetJump(CodeAddress),
+    /// LongJump命令 - 直近のSetJumpされた場所へジャンプ
+    LongJump,
 }
 impl<T,V,E> Default for Instruction<T,V,E>
     where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
@@ -388,6 +396,10 @@ impl<T,V,E> std::clone::Clone for Instruction<T,V,E>
             Self::Nop => Self::Nop,
             Self::Trap(ref v) => Self::Trap(v.clone()),
             Self::DebugLabel(ref v) => Self::DebugLabel(v.clone()),
+            Self::Branch(ref a) => Self::Branch(a.clone()),
+            Self::Exec => Self::Exec,
+            Self::SetJump(ref a) => Self::SetJump(a.clone()),
+            Self::LongJump => Self::LongJump,
         }
     }
 }
@@ -405,6 +417,10 @@ impl<T,V,E> fmt::Display for Instruction<T,V,E>
             Self::Nop => write!(f, "Nop"),
             Self::Trap(v) => write!(f, "Trap({})", v),
             Self::DebugLabel(v) => write!(f, "DebugLabel({})", v),
+            Self::Branch(a) => write!(f, "Branch({})", a),
+            Self::Exec => write!(f, "Exec"),
+            Self::SetJump(a) => write!(f, "SetJump({})", a),
+            Self::LongJump => write!(f, "LongJump"),
         }
     }
 }

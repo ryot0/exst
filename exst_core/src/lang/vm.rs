@@ -74,6 +74,8 @@ pub enum VmErrorReason<E> {
     TypeMismatchError(&'static str, &'static str),
     /// Trap
     TrapError(TrapReason),
+    /// 命令実行エラー
+    InstructionError(&'static str),
 }
 impl<E> From<CodeBufferErrorReason> for VmErrorReason<E> {
     fn from(e: CodeBufferErrorReason) -> Self {
@@ -263,7 +265,7 @@ impl fmt::Display for VmExecutionState {
 ///////////////////////////////////////////////////////////
 /// Vmの実態
 pub struct Vm<T,E,R>
-    where T: fmt::Display, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     state: VmState,
     execution_state: VmExecutionState,
@@ -286,7 +288,7 @@ pub struct Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// コンストラクタなど
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     /// コンストラクタ
     /// 
@@ -319,7 +321,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// 実行処理の実態
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     /// 1つの命令を実行する
     fn apply_instruction(&mut self, inst: Instruction<T,Self,VmErrorReason<E>>) -> Result<(),VmErrorReason<E>> {
@@ -351,7 +353,7 @@ impl<T,E,R> Vm<T,E,R>
                 let val = self.env_stack.get(base.stack_address(), adr)?;
                 self.data_stack.push(val);
                 self.program_counter = self.program_counter.next();
-            }
+            },
             Instruction::Nop => {
                 //何もしない命令
                 self.program_counter = self.program_counter.next();
@@ -364,7 +366,31 @@ impl<T,E,R> Vm<T,E,R>
             Instruction::DebugLabel(_) => {
                 //何もしない命令
                 self.program_counter = self.program_counter.next();
-            }
+            },
+            Instruction::Branch(adr) => {
+                let top = self.data_stack_mut().pop()?;
+                if Value::IntValue(0) == *top {
+                    self.program_counter = self.program_counter.next();
+                } else {
+                    self.program_counter = adr;
+                }
+            },
+            Instruction::Exec => {
+                let top = self.data_stack_mut().pop()?;
+                if let Value::CodeAddress(adr) = *top {
+                    //環境を退避して、オペランドのアドレスにジャンプ
+                    self.return_stack.push(self.program_counter.next(), self.env_stack.here());
+                    self.program_counter = adr;
+                } else {
+                    return Result::Err(VmErrorReason::InstructionError("Exec"));
+                }
+            },
+            Instruction::SetJump(_) => {
+                unimplemented!();
+            },
+            Instruction::LongJump => {
+                unimplemented!();
+            },
         }
         Result::Ok(())
     }
@@ -478,7 +504,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// ワード登録の実態
 impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
-    where T: fmt::Display, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     type ExtraPrimitiveWordErrorReasonType = E;
     type VmType = Self;
@@ -498,7 +524,7 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// Vm操作の実態
 impl<T,E,R> VmManipulation for Vm<T,E,R>
-    where T: fmt::Display, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     type ExtraValueType = T;
     type ExtraPrimitiveWordErrorReasonType = E;
