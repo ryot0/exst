@@ -79,6 +79,48 @@ pub fn compile_word_terminator<V: VmManipulation>() -> Instruction<V::ExtraValue
     Instruction::DebugLabel(DebugLabel::WordTerminator)
 }
 
+/// Branch命令のコンパイル
+/// 
+/// # Arguments
+/// * adr - 分岐先アドレス
+/// 
+/// # Return Values
+/// 命令
+pub fn compile_branch<V: VmManipulation>(adr: CodeAddress) -> Instruction<V::ExtraValueType,V,VmErrorReason<V::ExtraPrimitiveWordErrorReasonType>> {
+    Instruction::Branch(adr)
+}
+
+/// Exec命令のコンパイル
+/// 
+/// # Arguments
+/// 
+/// # Return Values
+/// 命令
+pub fn compile_exec<V: VmManipulation>() -> Instruction<V::ExtraValueType,V,VmErrorReason<V::ExtraPrimitiveWordErrorReasonType>> {
+    Instruction::Exec
+}
+
+/// SetJump命令のコンパイル
+/// 
+/// # Arguments
+/// * adr - long jump先のアドレス
+/// 
+/// # Return Values
+/// 命令
+pub fn compile_set_jump<V: VmManipulation>(adr: CodeAddress) -> Instruction<V::ExtraValueType,V,VmErrorReason<V::ExtraPrimitiveWordErrorReasonType>> {
+    Instruction::SetJump(adr)
+}
+
+/// LongJump命令のコンパイル
+/// 
+/// # Arguments
+/// 
+/// # Return Values
+/// 命令
+pub fn compile_longjump<V: VmManipulation>() -> Instruction<V::ExtraValueType,V,VmErrorReason<V::ExtraPrimitiveWordErrorReasonType>> {
+    Instruction::LongJump
+}
+
 /// シンボル名からLocalRef命令 or Call命令にコンパイル
 /// 
 /// # Arguments
