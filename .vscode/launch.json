@@ -39,14 +39,14 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug exst base cmd",
+            "name": "Debug exst cli",
             "cargo": {
                 "args": [
                     "test",
                 ],
                 "filter": {
-                    "name": "exst_base_cmd",
-                    "kind": "lib"
+                    "name": "exst_cli",
+                    "kind": "bin"
                 }
             },
             "args": [],

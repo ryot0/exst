@@ -37,7 +37,14 @@ impl<'a, V, T> fmt::Display for VmDump1<'a, V, T>
 /// * f - 出力先
 pub fn dump_vm_sate<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result {
     writeln!(f, "vm state: {}", v.state())?;
-    writeln!(f, "program counter: {}", v.program_counter())?;
+    match v.word_dictionary().guess_name(&v.program_counter()) {
+        Option::Some(wname) => {
+            writeln!(f, "program counter: {} -- {}", v.program_counter(), wname)?;
+        },
+        Option::None => {
+            writeln!(f, "program counter: {}", v.program_counter())?;
+        },
+    }
     writeln!(f, "script name: {}", 
         match v.debug_info_store().current_script_name() {
             Some(script_name) => {
@@ -117,7 +124,21 @@ fn dump_code<V: VmManipulation>(v: &V, adr: CodeAddress, f: &mut fmt::Formatter)
         CodeAddress(Address::Entity(_)) => {
             match v.code_buffer().get(adr) {
                 Result::Ok(inst) => {
-                    write!(f, "  {}: {} ", adr, inst)?;
+                    match inst {
+                        Instruction::Call(wadr) => {
+                            match v.word_dictionary().find_name(&wadr) {
+                                Option::Some(wname) => {
+                                    write!(f, "  {}: {} -- {} ", adr, inst, wname)?;
+                                },
+                                Option::None => {
+                                    write!(f, "  {}: {} ", adr, inst)?;
+                                },
+                            }
+                        },
+                        _ => {
+                            write!(f, "  {}: {} ", adr, inst)?;
+                        },
+                    }
                     dump_code_mapping(v, adr, f)
                 },
                 Result::Err(_) => {
@@ -145,7 +166,7 @@ pub fn dump_word_code<V: VmManipulation>(v: &V, name: &String, f: &mut fmt::Form
     let word = v.word_dictionary().find_word(name);
     let (word_info, mut adr) = match word {
         Result::Ok(w) => (w.to_string(), w.code()),
-        Result::Err(_) => (String::from("#UNDEFINED#"), CodeAddress::default())
+        Result::Err(_) => (String::from("#UNKNOWN#"), CodeAddress::default())
     };
 
     writeln!(f, "{}: {}{{", name, word_info)?;
@@ -217,7 +238,14 @@ pub fn dump_env<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result
             Result::Ok(next_call_frame) => next_call_frame.stack_address().0,
             Result::Err(_) => v.env_stack().here().0,
         };
-        write!(f, "  {}: ", current)?;
+        match v.word_dictionary().guess_name(&current.return_address()) {
+            Option::Some(wname) => {
+                write!(f, "  {} -- {}: ", current, wname)?;
+            },
+            Option::None => {
+                write!(f, "  {}: ", current)?;
+            },
+        }
         dump_code(v, current.return_address(), f)?;
         writeln!(f, "")?;
         dump_env_stack(v, current.stack_address(), From::from(next_adr - current.stack_address().0), f)?;

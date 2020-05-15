@@ -17,6 +17,7 @@
 
 use super::value::*;
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt;
 
 ///////////////////////////////////////////////////////////
@@ -93,6 +94,7 @@ impl fmt::Display for Word {
 /// 
 pub struct Dictionary {
     dict: HashMap<String,Word>,
+    inverse_dict: BTreeMap<CodeAddress,String>,
     reserved_name: Option<String>,
     reserved_word: Option<Word>,
 }
@@ -102,6 +104,7 @@ impl Dictionary {
     pub fn new() -> Self {
         Dictionary {
             dict: HashMap::new(),
+            inverse_dict: BTreeMap::new(),
             reserved_name: Option::None,
             reserved_word: Option::None,
         }
@@ -124,6 +127,43 @@ impl Dictionary {
         v.iter().map(|a|{ a.0 }).collect()
     }
 
+    /// コードアドレスからワード名を逆引き
+    /// 
+    /// # Aeguments
+    /// * adr - コードアドレス
+    /// 
+    /// # Return Values
+    /// adrを含むワードの名前
+    pub fn guess_name(&self, adr: &CodeAddress) -> Option<&String> {
+        match adr.adr() {
+            Result::Ok(base) => {
+                let mut ret = Option::None;
+                for (a, n) in self.inverse_dict.iter() {
+                    if a.adr().is_ok() && a.adr().unwrap() > base {
+                        break;
+                    } else {
+                        ret = Option::Some(n);
+                    }
+                }
+                ret
+            },
+            Result::Err(_) => {
+                Option::None
+            }
+        }
+    }
+
+    /// コードアドレスを開始位置とするワードを逆引き
+    /// 
+    /// # Aeguments
+    /// * adr - コードアドレス
+    /// 
+    /// # Return Values
+    /// adrから始まるワードの名前
+    pub fn find_name(&self, adr: &CodeAddress) -> Option<&String> {
+        self.inverse_dict.get(adr)
+    }
+
     /// ワード定義を予約登録
     /// 
     /// # Arguments
@@ -141,7 +181,9 @@ impl Dictionary {
         match name {
             Option::Some(n) => match word {
                 Option::Some(w) => {
-                    Result::Ok({ self.dict.insert(n, w); })
+                    self.inverse_dict.insert(w.code, n.clone());
+                    self.dict.insert(n.clone(), w);
+                    Result::Ok(())
                 },
                 Option::None => Result::Err(WordErrorReason::CompleteWordInUnreserved),
             },
@@ -411,5 +453,38 @@ mod tests {
             },
             true
         );
+    }
+
+    #[test]
+    fn test_inverse_dict() {
+
+        let mut d1 = Dictionary::new();
+        d1.reserve_word_def(String::from("A"), Word::new(From::from(20)));
+        d1.complate_word_def().unwrap();
+        d1.reserve_word_def(String::from("B"), Word::new(From::from(30)));
+        d1.complate_word_def().unwrap();
+        d1.reserve_word_def(String::from("C"), Word::new(From::from(10)));
+        d1.complate_word_def().unwrap();
+
+        assert_eq!(d1.find_name(&From::from(9)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(9)).is_none(), true);
+        assert_eq!(d1.find_name(&From::from(10)).unwrap(), "C");
+        assert_eq!(d1.guess_name(&From::from(10)).unwrap(), "C");
+        assert_eq!(d1.find_name(&From::from(11)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(11)).unwrap(), "C");
+        assert_eq!(d1.find_name(&From::from(19)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(19)).unwrap(), "C");
+        assert_eq!(d1.find_name(&From::from(20)).unwrap(), "A");
+        assert_eq!(d1.guess_name(&From::from(20)).unwrap(), "A");
+        assert_eq!(d1.find_name(&From::from(21)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(21)).unwrap(), "A");
+        assert_eq!(d1.find_name(&From::from(29)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(29)).unwrap(), "A");
+        assert_eq!(d1.find_name(&From::from(30)).unwrap(), "B");
+        assert_eq!(d1.guess_name(&From::from(30)).unwrap(), "B");
+        assert_eq!(d1.find_name(&From::from(31)).is_none(), true);
+        assert_eq!(d1.guess_name(&From::from(31)).unwrap(), "B");
+
+        assert_eq!(d1.all_word_names(), ["C", "A", "B"]);
     }
 }
