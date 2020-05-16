@@ -47,6 +47,7 @@ use super::tokenizer::*;
 use super::resource::*;
 use super::debug::*;
 use std::fmt;
+use std::rc::Rc;
 
 ///////////////////////////////////////////////////////////
 /// Vm実行中のエラー
@@ -70,6 +71,8 @@ pub enum VmErrorReason<E> {
     WordError(WordErrorReason),
     /// トークン解析時のエラー
     TokenError(TokenizerError),
+    /// リソースエラー
+    ResourceError(ResourceErrorReason),
     /// 外部関数エラー
     ExtraPrimitiveWordError(E),
     /// 型変換エラー
@@ -124,17 +127,39 @@ impl<E> From<TokenizerError> for VmErrorReason<E> {
         Self::TokenError(e)
     }
 }
+impl<E> From<ResourceErrorReason> for VmErrorReason<E> {
+    fn from(e: ResourceErrorReason) -> Self {
+        Self::ResourceError(e)
+    }
+}
+
+///////////////////////////////////////////////////////////
+/// Vm実行trait
+pub trait VmExecution {
+    
+    /// リソース
+    type ResourcesType: Resources;
+    /// 拡張エラー型
+    type ExtraPrimitiveWordErrorReasonType;
+    
+    /// スクリプトを呼び出す
+    fn call_script(&mut self, script: Box<dyn TokenIterator>);
+    
+    /// リソースを取得
+    fn resources_mut(&mut self) -> &mut Self::ResourcesType;
+    fn resources(&self) -> &Self::ResourcesType;
+
+    /// 実行
+    fn exec(&mut self) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>;
+    fn exec_with_args(&mut self, args: &Vec<String>) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>;
+}
 
 ///////////////////////////////////////////////////////////
 /// Vm操作trait
-pub trait VmManipulation: Sized {
+pub trait VmManipulation: Sized + VmExecution {
 
     /// 拡張型
     type ExtraValueType: fmt::Display;
-    /// 拡張エラー型
-    type ExtraPrimitiveWordErrorReasonType;
-    /// リソース
-    type ResourcesType: Resources;
 
     /// データスタックの取得
     fn data_stack_mut(&mut self) -> &mut DataStack<Self::ExtraValueType>;
@@ -189,13 +214,6 @@ pub trait VmManipulation: Sized {
     /// 現在のスクリプトの取得
     fn input_stream_mut(&mut self) -> &mut dyn TokenIterator;
     fn input_stream(&self) -> &dyn TokenIterator;
-    
-    /// スクリプトを呼び出す
-    fn call_script(&mut self, script: Box<dyn TokenIterator>);
-    
-    /// リソースを取得
-    fn resources_mut(&mut self) -> &mut Self::ResourcesType;
-    fn resources(&self) -> &Self::ResourcesType;
 
     /// デバッグ情報の取得
     fn debug_info_store(&self) -> &DebugInfoStore;
@@ -502,25 +520,6 @@ impl<T,E,R> Vm<T,E,R>
         };
         Result::Ok(())
     }
-
-    /// Vmの実行
-    pub fn exec(&mut self) -> Result<(),VmErrorReason<E>> {
-        loop {
-            match self.execution_state {
-                VmExecutionState::TokenIteration => match self.state {
-                    VmState::Interpretation => { self.exec_interpretation()?; },
-                    VmState::Compilation => { self.exec_compilation(false)?; },
-                    VmState::RecursableCompilation => { self.exec_compilation(true)?; },
-                    VmState::Return => { self.exec_return()?; },
-                    VmState::Stop => { break; },
-                },
-                VmExecutionState::CodeExecution => {
-                    self.exec_execution()?;
-                },
-            }
-        }
-        Result::Ok(())
-    }
 }
 ///////////////////////////////////////////////////////////
 /// ワード登録の実態
@@ -543,13 +542,57 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
     }
 }
 ///////////////////////////////////////////////////////////
+/// Vm実行の実態
+impl<T,E,R> VmExecution for Vm<T,E,R>
+    where T: fmt::Display + PartialEq + Eq, R: Resources
+{
+    type ResourcesType = R;
+    type ExtraPrimitiveWordErrorReasonType = E;
+
+    fn call_script(&mut self, script: Box<dyn TokenIterator>) {
+        self.debug_info_store.call_script(script.script_name());
+        self.script_call_stack.push(std::mem::replace(&mut self.input, script), self.state);
+    }
+    fn resources_mut(&mut self) -> &mut Self::ResourcesType {
+        &mut self.resources
+    }
+    fn resources(&self) -> &Self::ResourcesType {
+        &self.resources
+    }
+
+    /// Vmの実行
+    fn exec(&mut self) -> Result<(),VmErrorReason<E>> {
+        loop {
+            match self.execution_state {
+                VmExecutionState::TokenIteration => match self.state {
+                    VmState::Interpretation => { self.exec_interpretation()?; },
+                    VmState::Compilation => { self.exec_compilation(false)?; },
+                    VmState::RecursableCompilation => { self.exec_compilation(true)?; },
+                    VmState::Return => { self.exec_return()?; },
+                    VmState::Stop => { break; },
+                },
+                VmExecutionState::CodeExecution => {
+                    self.exec_execution()?;
+                },
+            }
+        }
+        Result::Ok(())
+    }
+
+    /// 引数月でVmの実行
+    fn exec_with_args(&mut self, args: &Vec<String>) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>> {
+        for a in args.iter() {
+            self.env_stack_mut().push(Rc::new(Value::StrValue(a.clone())));
+        }
+        self.exec()
+    }
+}
+///////////////////////////////////////////////////////////
 /// Vm操作の実態
 impl<T,E,R> VmManipulation for Vm<T,E,R>
     where T: fmt::Display + PartialEq + Eq, R: Resources
 {
     type ExtraValueType = T;
-    type ExtraPrimitiveWordErrorReasonType = E;
-    type ResourcesType = R;
 
     fn data_stack_mut(&mut self) -> &mut DataStack<Self::ExtraValueType> {
         &mut self.data_stack
@@ -616,16 +659,6 @@ impl<T,E,R> VmManipulation for Vm<T,E,R>
     }
     fn input_stream(&self) -> &dyn TokenIterator {
         &*self.input
-    }
-    fn call_script(&mut self, script: Box<dyn TokenIterator>) {
-        self.debug_info_store.call_script(script.script_name());
-        self.script_call_stack.push(std::mem::replace(&mut self.input, script), self.state);
-    }
-    fn resources_mut(&mut self) -> &mut Self::ResourcesType {
-        &mut self.resources
-    }
-    fn resources(&self) -> &Self::ResourcesType {
-        &self.resources
     }
     fn debug_info_store(&self) -> &DebugInfoStore {
         &self.debug_info_store
