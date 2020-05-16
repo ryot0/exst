@@ -1,6 +1,6 @@
 
-use super::super::vm::*;
-use super::super::value::*;
+use super::super::lang::vm::*;
+use super::super::lang::value::*;
 use std::rc::Rc;
 
 pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>

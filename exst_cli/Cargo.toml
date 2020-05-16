@@ -3,7 +3,11 @@ name = "exst_cli"
 version = "0.1.0"
 authors = ["ryoto naruse <naruse.com@gmail.com>"]
 edition = "2018"
+description = "EXST is EXtendable STack based programming language environment. This software is command line interface for EXST that contains only basicaly features."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+exst_core = { path = "../exst_core" }
+exst_repl = { path = "../exst_repl" }
+clap = "2.33.1"

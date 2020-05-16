@@ -1,5 +1,5 @@
 
-use super::super::vm::*;
+use super::super::lang::vm::*;
 use super::util;
 
 pub fn initialize<V>(vm: &mut V)

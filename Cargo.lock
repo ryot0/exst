@@ -40,6 +40,11 @@ dependencies = [
 [[package]]
 name = "exst_cli"
 version = "0.1.0"
+dependencies = [
+ "clap 2.33.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "exst_core 0.1.0",
+ "exst_repl 0.1.0",
+]
 
 [[package]]
 name = "exst_core"

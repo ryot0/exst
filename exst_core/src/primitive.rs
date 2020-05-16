@@ -1,7 +1,7 @@
 mod arithmetic_word;
 mod util;
 
-use super::vm::*;
+use super::lang::vm::*;
 
 pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore
