@@ -42,14 +42,14 @@
             "name": "Debug exst cli",
             "cargo": {
                 "args": [
-                    "test",
+                    "run",
                 ],
                 "filter": {
                     "name": "exst_cli",
                     "kind": "bin"
                 }
             },
-            "args": [],
+            "args": ["-d"],
             "cwd": "${workspaceFolder}"
         },
         {

@@ -456,7 +456,7 @@ impl<T,E,R> Vm<T,E,R>
         compile::compile_token(self, token, recursable)
     }
 
-    /// インタープリター状態での実行
+    /// コード実行状態での実行
     fn exec_execution(&mut self) -> Result<(),VmErrorReason<E>> {
         while let CodeAddress(Address::Entity(_)) = self.program_counter {
             let inst = self.code_buffer.get(self.program_counter)?;
@@ -562,6 +562,8 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
 
     /// Vmの実行
     fn exec(&mut self) -> Result<(),VmErrorReason<E>> {
+        self.execution_state = VmExecutionState::TokenIteration;
+        self.state = VmState::Interpretation;
         loop {
             match self.execution_state {
                 VmExecutionState::TokenIteration => match self.state {
