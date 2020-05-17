@@ -512,6 +512,7 @@ impl<T,E,R> Vm<T,E,R>
             Some((i,s)) => {
                 self.input = i;
                 self.state = s;
+                self.execution_state = VmExecutionState::TokenIteration;
                 self.debug_info_store.return_script();
             },
             None => {
