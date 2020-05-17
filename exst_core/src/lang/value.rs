@@ -368,11 +368,11 @@ impl<T> fmt::Display for Value<T>
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::IntValue(v) => write!(f, "Value({})", v),
-            Self::StrValue(v) => write!(f, "Value({})", v),
+            Self::IntValue(v) => write!(f, "{}", v),
+            Self::StrValue(v) => write!(f, "{}", v),
             Self::CodeAddress(v) => write!(f, "Value({})", v),
             Self::DataAddress(v) => write!(f, "Value({})", v),
-            Self::ExtValue(v) => write!(f, "Value({})", v),
+            Self::ExtValue(v) => write!(f, "{}", v),
             Self::Empty => write!(f, "Value(EMPTY)"),
         }
     }
