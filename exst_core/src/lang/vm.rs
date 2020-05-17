@@ -152,6 +152,9 @@ pub trait VmExecution {
     /// 実行
     fn exec(&mut self) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>;
     fn exec_with_args(&mut self, args: &Vec<String>) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>;
+
+    /// vmの状態をリセット
+    fn reset_vm_state(&mut self);
 }
 
 ///////////////////////////////////////////////////////////
@@ -563,8 +566,6 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
 
     /// Vmの実行
     fn exec(&mut self) -> Result<(),VmErrorReason<E>> {
-        self.execution_state = VmExecutionState::TokenIteration;
-        self.state = VmState::Interpretation;
         loop {
             match self.execution_state {
                 VmExecutionState::TokenIteration => match self.state {
@@ -588,6 +589,12 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
             self.env_stack_mut().push(Rc::new(Value::StrValue(a.clone())));
         }
         self.exec()
+    }
+
+    /// VMの状態をリセット
+    fn reset_vm_state(&mut self) {
+        self.execution_state = VmExecutionState::TokenIteration;
+        self.state = VmState::Interpretation;
     }
 }
 ///////////////////////////////////////////////////////////
