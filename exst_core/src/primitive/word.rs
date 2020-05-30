@@ -8,4 +8,17 @@ use super::super::lang::vm::*;
 pub fn initialize<V>(_: &mut V)
     where V: VmPrimitiveWordStore
 {
+    //:
+    //:noname
+    //:recurse
+    //;
+    //immidiate
+    //defer
+    //'
+    //[']
+    //is
+    //execute
+    //create
+    //does>
+    //recurse
 }
