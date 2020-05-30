@@ -406,6 +406,9 @@ impl<T,E,R> Vm<T,E,R>
                     self.program_counter = adr;
                 }
             },
+            Instruction::Jump(adr) => {
+                self.program_counter = adr;
+            },
             Instruction::Exec => {
                 let top = self.data_stack.pop()?;
                 if let Value::CodeAddress(adr) = *top {

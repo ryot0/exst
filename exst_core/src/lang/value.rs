@@ -448,6 +448,8 @@ pub enum Instruction<T,V,E>
     DebugLabel(DebugLabel),
     /// Branch命令 - 条件分岐。stack topが0以外の場合、分岐する
     Branch(CodeAddress),
+    /// Jump命令 - 無条件条件分岐
+    Jump(CodeAddress),
     /// stack topのCodeAddressを呼び出す
     Exec,
     /// SetJump命令 - LongJumpのジャンプ先を登録
@@ -478,6 +480,7 @@ impl<T,V,E> std::clone::Clone for Instruction<T,V,E>
             Self::Trap(ref v) => Self::Trap(v.clone()),
             Self::DebugLabel(ref v) => Self::DebugLabel(v.clone()),
             Self::Branch(ref a) => Self::Branch(a.clone()),
+            Self::Jump(ref a) => Self::Jump(a.clone()),
             Self::Exec => Self::Exec,
             Self::SetJump(ref a) => Self::SetJump(a.clone()),
             Self::LongJump => Self::LongJump,
@@ -500,6 +503,7 @@ impl<T,V,E> fmt::Display for Instruction<T,V,E>
             Self::Trap(v) => write!(f, "Trap({})", v),
             Self::DebugLabel(v) => write!(f, "DebugLabel({})", v),
             Self::Branch(a) => write!(f, "Branch({})", a),
+            Self::Jump(a) => write!(f, "Jump({})", a),
             Self::Exec => write!(f, "Exec"),
             Self::SetJump(a) => write!(f, "SetJump({})", a),
             Self::LongJump => write!(f, "LongJump"),
