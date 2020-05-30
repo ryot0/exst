@@ -425,10 +425,14 @@ impl<T,E,R> Vm<T,E,R>
             },
             Instruction::LongJump => {
                 let top = self.long_jump_stack.pop()?;
+                //データスタックの先頭を退避
+                let data = self.data_stack.peek()?;
                 self.program_counter = top.return_address();
                 self.return_stack.rollback(top.return_stack_address())?;
                 self.env_stack.rollback(top.env_stack_address())?;
                 self.data_stack.rollback(top.data_stack_address())?;
+                //データスタックの先頭のみを戻す
+                self.data_stack.push(data);
             },
             Instruction::PopJump => {
                 self.long_jump_stack.pop()?;
