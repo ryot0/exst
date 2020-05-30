@@ -44,7 +44,7 @@
 //! let res = ctx.parse_arg(app, vec!["example", "-m", "$MAIN", "-v", "MAIN=1 2 +", "-a", "1", "2"]);
 //! //vmの初期化
 //! let mut vm: V = Vm::new(res);
-//! vm.define_primitive_word(String::from("+"), false, plus);
+//! vm.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
 //! //実行
 //! let e = ctx.create(vm);
 //! assert_eq!(e.exec(), 0);
@@ -90,7 +90,7 @@ mod tests {
         let res = ctx.parse_arg(app, vec!["example", "-m", "$MAIN", "-v", "MAIN=1 2 +", "-a", "1", "2"]);
         //vmの初期化
         let mut vm: V = Vm::new(res);
-        vm.define_primitive_word(String::from("+"), false, plus);
+        vm.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
         //実行
         let e = ctx.create(vm);
         assert_eq!(e.exec(), 0);

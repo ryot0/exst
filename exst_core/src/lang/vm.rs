@@ -26,7 +26,7 @@
 //!     let s = r.get_token_iterator(&String::from("$")).unwrap();
 //!     let mut v: Vm<i32,i32,StdResources> = Vm::new(r);
 //!     //組み込みワードを登録
-//!     v.define_primitive_word(String::from("+"), false, plus);
+//!     v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
 //!     //実行スクリプトを登録
 //!     v.call_script(s);
 //!     //実行
@@ -242,8 +242,9 @@ pub trait VmPrimitiveWordStore {
     /// # Arguments
     /// * name - ワード名
     /// * immidiate - イミディエイトワード
+    /// * doc - ドキュメント
     /// * f - 実態の関数
-    fn define_primitive_word(&mut self, name: String, immidiate: bool, f: fn(&mut Self::VmType) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>);
+    fn define_primitive_word(&mut self, name: String, immidiate: bool, doc: String, f: fn(&mut Self::VmType) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>);
 }
 
 ///////////////////////////////////////////////////////////
@@ -540,7 +541,7 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
     type ExtraPrimitiveWordErrorReasonType = E;
     type VmType = Self;
 
-    fn define_primitive_word(&mut self, name: String, immidiate: bool, f: fn(&mut Self::VmType) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>) {
+    fn define_primitive_word(&mut self, name: String, immidiate: bool, doc: String, f: fn(&mut Self::VmType) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>) {
         self.word_dictionary.reserve_word_def(name, Word::new(self.code_buffer.here()));
         self.code_buffer.push(compile::compile_call_primitive(f));
         self.code_buffer.push(compile::compile_return());
@@ -548,6 +549,7 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
         if immidiate {
             self.word_dictionary.last_word_change_immidiate();
         }
+        self.word_dictionary.last_word_set_document(doc);
         self.word_dictionary.complate_word_def().unwrap();
     }
 }
@@ -782,7 +784,7 @@ mod tests {
         let s = r.get_token_iterator(&String::from("$")).unwrap();
         let mut v: V = Vm::new(r);
         //組み込みワードを登録
-        v.define_primitive_word(String::from("+"), false, plus);
+        v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
         //実行スクリプトを登録
         v.call_script(s);
         //実行
@@ -809,7 +811,7 @@ mod tests {
         let s3 = r.get_token_iterator(&String::from("$3")).unwrap();
         let mut v: V = Vm::new(r);
         //組み込みワードを登録
-        v.define_primitive_word(String::from("+"), false, plus);
+        v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
         //実行スクリプトを登録
         v.call_script(s3);
         v.call_script(s2);
@@ -841,7 +843,7 @@ mod tests {
         let mut v: V = Vm::new(r);
 
         //組み込みワードを登録
-        v.define_primitive_word(String::from("+"), false, plus);
+        v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
 
         //w1をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
@@ -896,7 +898,7 @@ mod tests {
         let mut v: V = Vm::new(r);
 
         //組み込みワードを登録
-        v.define_primitive_word(String::from("+"), false, plus);
+        v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
 
         //w1をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
@@ -941,7 +943,7 @@ mod tests {
         let mut v: V = Vm::new(r);
 
         //組み込みワードを登録
-        v.define_primitive_word(String::from("+"), false, plus);
+        v.define_primitive_word(String::from("+"), false, String::from("NO COMMENT"), plus);
 
         //trapをコンパイルして登録
         let code_point = v.code_buffer_mut().here();
