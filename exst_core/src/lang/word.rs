@@ -36,10 +36,11 @@ pub enum WordErrorReason {
 ///////////////////////////////////////////////////////////
 /// ワード構造体
 /// 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone)]
 pub struct Word {
     code: CodeAddress,
     immediate: bool,
+    document: String,
 }
 impl Word {
 
@@ -51,6 +52,7 @@ impl Word {
         Word {
             code: code,
             immediate: false,
+            document: String::from(""),
         }
     }
 
@@ -82,10 +84,26 @@ impl Word {
     pub fn is_immediate(&self) -> bool {
         self.immediate
     }
+
+    /// ドキュメントの登録
+    /// 
+    /// # Arguments
+    /// * doc - ドキュメント
+    pub fn set_document(&mut self, doc: String) {
+        self.document = doc;
+    }
+
+    /// ドキュメントの取得
+    /// 
+    /// # Return Values
+    /// ドキュメント
+    pub fn document(&self) -> &String {
+        &self.document
+    }
 }
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Word({},{})", self.code, self.immediate)
+        write!(f, "Word({},{},{})", self.code, self.immediate, self.document)
     }
 }
 
@@ -271,6 +289,15 @@ impl Dictionary {
     pub fn last_word_change_immidiate(&mut self) {
         match self.find_last_word_mut() {
             Result::Ok(w) => w.immediate(),
+            Result::Err(_) => { },
+        }
+    }
+
+    /// 最後に定義したワードにドキュメントを登録する
+    /// ワードがなければ、何もしない。
+    pub fn last_word_set_document(&mut self, doc: String) {
+        match self.find_last_word_mut() {
+            Result::Ok(w) => w.set_document(doc),
             Result::Err(_) => { },
         }
     }

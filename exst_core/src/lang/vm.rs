@@ -541,13 +541,12 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
     type VmType = Self;
 
     fn define_primitive_word(&mut self, name: String, immidiate: bool, f: fn(&mut Self::VmType) -> Result<(),VmErrorReason<Self::ExtraPrimitiveWordErrorReasonType>>) {
-        let mut word = Word::new(self.code_buffer.here());
-        self.word_dictionary.reserve_word_def(name, word);
+        self.word_dictionary.reserve_word_def(name, Word::new(self.code_buffer.here()));
         self.code_buffer.push(compile::compile_call_primitive(f));
         self.code_buffer.push(compile::compile_return());
         self.code_buffer.push(compile::compile_word_terminator());
         if immidiate {
-            word.immediate();
+            self.word_dictionary.last_word_change_immidiate();
         }
         self.word_dictionary.complate_word_def().unwrap();
     }
