@@ -13,8 +13,15 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("cr".to_string(), false, String::from(" -- ; print cr"), cr);
 }
 
+/// 起動時に実行するスクリプト
+pub fn preload_script() -> &'static str
+{r#"
+
+"#}
+
 /// スタックトップの印字
 fn dot<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     let top = vm.data_stack_mut().pop()?;
     let s = format!("{}", top);
@@ -24,6 +31,7 @@ fn dot<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 
 /// 改行の印字
 fn cr<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     vm.resources().write_stdout("\n");
     Result::Ok(())

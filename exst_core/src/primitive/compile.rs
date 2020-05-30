@@ -16,3 +16,9 @@ pub fn initialize<V>(_: &mut V)
     //postpone
     //特殊な命令にコンパイルされるワード
 }
+
+/// 起動時に実行するスクリプト
+pub fn preload_script() -> &'static str
+{r#"
+
+"#}

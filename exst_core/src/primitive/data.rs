@@ -13,3 +13,9 @@ pub fn initialize<V>(_: &mut V)
     //,
     //allot
 }
+
+/// 起動時に実行するスクリプト
+pub fn preload_script() -> &'static str
+{r#"
+
+"#}

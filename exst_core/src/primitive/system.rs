@@ -17,8 +17,15 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("load".to_string(), false, String::from("\"module name\" -- ; load module"), load);
 }
 
+/// 起動時に実行するスクリプト
+pub fn preload_script() -> &'static str
+{r#"
+
+"#}
+
 /// モジュールの終了
 fn exit<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     vm.set_state(VmState::Return);
     Result::Ok(())
@@ -26,6 +33,7 @@ fn exit<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 
 /// プログラムの終了
 fn bye<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     vm.set_state(VmState::Stop);
     Result::Ok(())
@@ -33,6 +41,7 @@ fn bye<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 
 /// コンパイルモードへ遷移
 fn to_compilation<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     vm.set_state(VmState::Compilation);
     Result::Ok(())
@@ -40,6 +49,7 @@ fn to_compilation<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>
 
 /// コンパイルモードへ遷移
 fn to_interpletation<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     vm.set_state(VmState::Interpretation);
     Result::Ok(())
@@ -47,6 +57,7 @@ fn to_interpletation<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason
 
 /// モジュールのロード
 fn load<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
 {
     util::call_with_name(vm, |v, name|{
         let target = v.resources().get_token_iterator(&name)?;

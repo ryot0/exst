@@ -11,7 +11,8 @@ use std::rc::Rc;
 /// ( int int -- int )のワードの呼び出し
 pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,
-          F: Fn(i32,i32) -> i32
+          F: Fn(i32,i32) -> i32,
+          E: std::fmt::Debug
 {
     let lhs = vm.data_stack_mut().pop()?;
     match *lhs {
@@ -36,7 +37,8 @@ pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
 /// 次のsymbol tokenを使用するワードの呼び出し
 pub fn call_with_name<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,
-          F: Fn(&mut V, &String) -> Result<(),VmErrorReason<E>>
+          F: Fn(&mut V, &String) -> Result<(),VmErrorReason<E>>,
+          E: std::fmt::Debug
 {
     match vm.input_stream_mut().next_token() {
         Option::Some(t) => {

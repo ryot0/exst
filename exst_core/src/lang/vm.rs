@@ -52,7 +52,7 @@ use std::rc::Rc;
 ///////////////////////////////////////////////////////////
 /// Vm実行中のエラー
 #[derive(Debug)]
-pub enum VmErrorReason<E> {
+pub enum VmErrorReason<E: fmt::Debug> {
     /// コードバッファのアクセスエラー
     CodeBufferAccessError(CodeBufferErrorReason),
     /// データバッファのアクセスエラー
@@ -82,52 +82,52 @@ pub enum VmErrorReason<E> {
     /// 命令実行エラー
     InstructionError(&'static str),
 }
-impl<E> From<CodeBufferErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<CodeBufferErrorReason> for VmErrorReason<E> {
     fn from(e: CodeBufferErrorReason) -> Self {
         Self::CodeBufferAccessError(e)
     }
 }
-impl<E> From<DataBufferErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<DataBufferErrorReason> for VmErrorReason<E> {
     fn from(e: DataBufferErrorReason) -> Self {
         Self::DataBufferAccessError(e)
     }
 }
-impl<E> From<DataStackErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<DataStackErrorReason> for VmErrorReason<E> {
     fn from(e: DataStackErrorReason) -> Self {
         Self::DataStackAccessError(e)
     }
 }
-impl<E> From<ReturnStackErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<ReturnStackErrorReason> for VmErrorReason<E> {
     fn from(e: ReturnStackErrorReason) -> Self {
         Self::ReturnStackAccessError(e)
     }
 }
-impl<E> From<EnvironmentStackErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<EnvironmentStackErrorReason> for VmErrorReason<E> {
     fn from(e: EnvironmentStackErrorReason) -> Self {
         Self::EnvironmentStackAccessError(e)
     }
 }
-impl<E> From<ControlflowStackErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<ControlflowStackErrorReason> for VmErrorReason<E> {
     fn from(e: ControlflowStackErrorReason) -> Self {
         Self::ControlflowStackAccessError(e)
     }
 }
-impl<E> From<LongJumpStackErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<LongJumpStackErrorReason> for VmErrorReason<E> {
     fn from(e: LongJumpStackErrorReason) -> Self {
         Self::LongJumpStackAccessError(e)
     }
 }
-impl<E> From<WordErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<WordErrorReason> for VmErrorReason<E> {
     fn from(e: WordErrorReason) -> Self {
         Self::WordError(e)
     }
 }
-impl<E> From<TokenizerError> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<TokenizerError> for VmErrorReason<E> {
     fn from(e: TokenizerError) -> Self {
         Self::TokenError(e)
     }
 }
-impl<E> From<ResourceErrorReason> for VmErrorReason<E> {
+impl<E: fmt::Debug> From<ResourceErrorReason> for VmErrorReason<E> {
     fn from(e: ResourceErrorReason) -> Self {
         Self::ResourceError(e)
     }
@@ -140,7 +140,7 @@ pub trait VmExecution {
     /// リソース
     type ResourcesType: Resources;
     /// 拡張エラー型
-    type ExtraPrimitiveWordErrorReasonType;
+    type ExtraPrimitiveWordErrorReasonType: fmt::Debug;
     
     /// スクリプトを呼び出す
     fn call_script(&mut self, script: Box<dyn TokenIterator>);
@@ -233,7 +233,7 @@ pub trait VmManipulation: Sized + VmExecution {
 pub trait VmPrimitiveWordStore {
 
     /// 拡張エラー型
-    type ExtraPrimitiveWordErrorReasonType;
+    type ExtraPrimitiveWordErrorReasonType: fmt::Debug;
     /// Vmの実態
     type VmType: VmManipulation;
 
@@ -294,7 +294,7 @@ impl fmt::Display for VmExecutionState {
 ///////////////////////////////////////////////////////////
 /// Vmの実態
 pub struct Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     state: VmState,
     execution_state: VmExecutionState,
@@ -318,7 +318,7 @@ pub struct Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// コンストラクタなど
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     /// コンストラクタ
     /// 
@@ -352,7 +352,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// 実行処理の実態
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     /// 1つの命令を実行する
     fn apply_instruction(&mut self, inst: Instruction<T,Self,VmErrorReason<E>>) -> Result<(),VmErrorReason<E>> {
@@ -536,7 +536,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// ワード登録の実態
 impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     type ExtraPrimitiveWordErrorReasonType = E;
     type VmType = Self;
@@ -556,7 +556,7 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// Vm実行の実態
 impl<T,E,R> VmExecution for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     type ResourcesType = R;
     type ExtraPrimitiveWordErrorReasonType = E;
@@ -608,7 +608,7 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// Vm操作の実態
 impl<T,E,R> VmManipulation for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources
+    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
 {
     type ExtraValueType = T;
 
