@@ -10,11 +10,11 @@ use super::util;
 pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore
 {
-    vm.define_primitive_word("exit".to_string(), false, String::from("NO COMMENT"), exit);
-    vm.define_primitive_word("bye".to_string(), false, String::from("NO COMMENT"), bye);
-    vm.define_primitive_word("[".to_string(), true, String::from("NO COMMENT"), to_interpletation);
-    vm.define_primitive_word("]".to_string(), false, String::from("NO COMMENT"), to_compilation);
-    vm.define_primitive_word("load".to_string(), false, String::from("NO COMMENT"), load);
+    vm.define_primitive_word("exit".to_string(), false, String::from(" -- ; return module"), exit);
+    vm.define_primitive_word("bye".to_string(), false, String::from(" -- ; stop program"), bye);
+    vm.define_primitive_word("[".to_string(), true, String::from(" -- ; start interpletation mode"), to_interpletation);
+    vm.define_primitive_word("]".to_string(), false, String::from(" -- ; start compilation mode"), to_compilation);
+    vm.define_primitive_word("load".to_string(), false, String::from("\"module name\" -- ; load module"), load);
 }
 
 /// モジュールの終了

@@ -9,8 +9,8 @@ use super::super::lang::resource::Resources;
 pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore
 {
-    vm.define_primitive_word(".".to_string(), false, String::from("NO COMMENT"), dot);
-    vm.define_primitive_word("cr".to_string(), false, String::from("NO COMMENT"), cr);
+    vm.define_primitive_word(".".to_string(), false, String::from("a -- ; print a"), dot);
+    vm.define_primitive_word("cr".to_string(), false, String::from(" -- ; print cr"), cr);
 }
 
 /// スタックトップの印字

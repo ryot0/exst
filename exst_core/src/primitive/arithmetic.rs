@@ -9,11 +9,11 @@ use super::util;
 pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore
 {
-    vm.define_primitive_word("+".to_string(), false, String::from("NO COMMENT"), plus);
-    vm.define_primitive_word("-".to_string(), false, String::from("NO COMMENT"), minus);
-    vm.define_primitive_word("*".to_string(), false, String::from("NO COMMENT"), multiple);
-    vm.define_primitive_word("/".to_string(), false, String::from("NO COMMENT"), division);
-    vm.define_primitive_word("%".to_string(), false, String::from("NO COMMENT"), modulus);
+    vm.define_primitive_word("+".to_string(), false, String::from("a b -- [a+b]; "), plus);
+    vm.define_primitive_word("-".to_string(), false, String::from("a b -- [a-b]; "), minus);
+    vm.define_primitive_word("*".to_string(), false, String::from("a b -- [a*b]; "), multiple);
+    vm.define_primitive_word("/".to_string(), false, String::from("a b -- [a/b]; "), division);
+    vm.define_primitive_word("%".to_string(), false, String::from("a b -- [a%b]; "), modulus);
 }
 
 /// 足し算
