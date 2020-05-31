@@ -17,17 +17,22 @@ mod util;
 use super::lang::vm::*;
 use super::lang::tokenizer::*;
 
-/// 文字列をロードし、関連ワードを定義する
+/// 文字列をロードする
 /// 
-/// # Panics
-/// 組み込みのスクリプトにエラーがあった場合、パニックする
+/// # Arguments
+/// * script - ロードする文字列
 /// 
-fn preload<V>(vm: &mut V, script: &'static str)
+/// # Return Values
+/// ロードされたVm
+/// 
+pub fn preload<'a, V>(vm: &'a mut V, script: &'static str) -> &'a mut V
     where V: VmExecution
 {
     let token = Box::new(new_token_stream_from_str(script));
+    vm.reset_vm_state();
     vm.call_script(token);
-    vm.exec().unwrap();
+    vm.reset_vm_state();
+    vm
 }
 
 /// 組み込みワードをvmに登録する
@@ -51,14 +56,14 @@ pub fn initialize<V>(vm: &mut V)
     debug::initialize(vm);
 
     // 関連するワードを組み込みスクリプトから登録
-    preload(vm, stack::preload_script());
-    preload(vm, data::preload_script());
-    preload(vm, system::preload_script());
-    preload(vm, compile::preload_script());
-    preload(vm, word::preload_script());
-    preload(vm, arithmetic::preload_script());
-    preload(vm, exception::preload_script());
-    preload(vm, controlflow::preload_script());
-    preload(vm, io::preload_script());
-    preload(vm, debug::preload_script());
+    preload(vm, stack::preload_script()).exec().unwrap();
+    preload(vm, data::preload_script()).exec().unwrap();
+    preload(vm, system::preload_script()).exec().unwrap();
+    preload(vm, compile::preload_script()).exec().unwrap();
+    preload(vm, word::preload_script()).exec().unwrap();
+    preload(vm, arithmetic::preload_script()).exec().unwrap();
+    preload(vm, exception::preload_script()).exec().unwrap();
+    preload(vm, controlflow::preload_script()).exec().unwrap();
+    preload(vm, io::preload_script()).exec().unwrap();
+    preload(vm, debug::preload_script()).exec().unwrap();
 }
