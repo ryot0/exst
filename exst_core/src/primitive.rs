@@ -16,7 +16,6 @@ mod util;
 
 use super::lang::vm::*;
 use super::lang::tokenizer::*;
-use super::lang::utility::*;
 
 /// 文字列をロードし、関連ワードを定義する
 /// 
@@ -26,16 +25,7 @@ use super::lang::utility::*;
 fn preload<V>(vm: &mut V, script: &'static str)
     where V: VmExecution
 {
-    let token =
-        Box::new(
-            TokenStream::new(
-                CharStreamFromBufRead::new(
-                    std::io::BufReader::new(
-                        CharReaderFromString::new(String::from(script))
-                    )
-                )
-            )
-        );
+    let token = Box::new(new_token_stream_from_str(script));
     vm.call_script(token);
     vm.exec().unwrap();
 }

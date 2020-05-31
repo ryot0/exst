@@ -129,24 +129,6 @@ pub trait Resources {
     fn get_string(&self, resource_name: &String) -> Result<String,ResourceErrorReason>;
 }
 
-/// Read TraitからTokenIteratorを生成して返す
-fn create_token_iterator<'a, R>(resource_name: &String, read: R) -> Result<Box<dyn TokenIterator + 'a>,ResourceErrorReason> 
-    where R: io::Read + 'a
-{
-    Result::Ok(
-        Box::new(
-            TokenStream::new_with_name(
-                CharStreamFromBufRead::new(
-                    std::io::BufReader::new(
-                        read
-                    )
-                ),
-                resource_name.clone()
-            )
-        )
-    )
-}
-
 ///////////////////////////////////////////////////////////
 /// 標準的なリソースアクセスを提供する
 /// 
@@ -208,13 +190,13 @@ impl Resources for StdResources {
                         //プロジェクトルートからの相対パス
                         let p = path::Path::new(&self.project_root).join(path::Path::new(resource_name.get(1..).unwrap()));
                         let f = fs::OpenOptions::new().read(true).open(p)?;
-                        create_token_iterator(resource_name, f)
+                        Result::Ok(create_token_iterator(resource_name, f))
                     },
                     '$' => {
                         //内部で保持している文字列Mapから取得
                         match self.internal_resource.get(resource_name) {
                             Some(value) => {
-                                create_token_iterator(resource_name, CharReaderFromString::new(value.clone()))
+                                Result::Ok(create_token_iterator(resource_name, CharReaderFromString::new(value.clone())))
                             },
                             None => {
                                 Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
@@ -224,7 +206,7 @@ impl Resources for StdResources {
                     '%' => {
                         //標準入力など
                         if resource_name == "%STDIN" {
-                            create_token_iterator(resource_name, io::stdin())
+                            Result::Ok(create_token_iterator(resource_name, io::stdin()))
                         } else {
                             Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
                         }
@@ -233,7 +215,7 @@ impl Resources for StdResources {
                         let name: String = resource_name.chars().skip(1).collect();
                         match env::var(name) {
                             Result::Ok(v) => {
-                                create_token_iterator(resource_name, CharReaderFromString::new(v))
+                                Result::Ok(create_token_iterator(resource_name, CharReaderFromString::new(v)))
                             },
                             Result::Err(_) => {
                                 Result::Err(ResourceErrorReason::ResourceNotFound(resource_name.clone()))
@@ -243,7 +225,7 @@ impl Resources for StdResources {
                     _ => {
                         //システムのファイルパスと解釈して、ファイルを取得
                         let f = fs::OpenOptions::new().read(true).open(resource_name)?;
-                        create_token_iterator(resource_name, f)
+                        Result::Ok(create_token_iterator(resource_name, f))
                     },
                 }
             },

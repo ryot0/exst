@@ -884,8 +884,38 @@ impl<I> TokenStream<I>
     }
 }
 
+/// strからTokenIteratorを生成して返す
+/// 
+/// # Arguments
+/// * v - ソース
+/// 
+/// # Return Values
+/// TokenIterator
 pub fn new_token_stream_from_str(v: &str) -> TokenStream<CharStreamFromBufRead<io::BufReader<&[u8]>>> {
     TokenStream::new(CharStreamFromBufRead::new(buf_reader_from_str(v)))
+}
+
+/// Read TraitからTokenIteratorを生成して返す
+/// 
+/// # Arguments
+/// * resource_name - リソース名
+/// * read - リーダー
+/// 
+/// # Return Values
+/// TokenIterator
+pub fn create_token_iterator<'a, R>(resource_name: &String, read: R) -> Box<dyn TokenIterator + 'a>
+    where R: io::Read + 'a
+{
+    Box::new(
+        TokenStream::new_with_name(
+            CharStreamFromBufRead::new(
+                std::io::BufReader::new(
+                    read
+                )
+            ),
+            resource_name.clone()
+        )
+    )
 }
 
 #[cfg(test)]
