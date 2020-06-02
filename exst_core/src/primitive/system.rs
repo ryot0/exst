@@ -10,7 +10,7 @@ use super::util;
 pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore
 {
-    vm.define_primitive_word("exit".to_string(), false, String::from(" -- ; return module"), exit);
+    vm.define_primitive_word("quit".to_string(), false, String::from(" -- ; return module"), quit);
     vm.define_primitive_word("bye".to_string(), false, String::from(" -- ; stop program"), bye);
     vm.define_primitive_word("[".to_string(), true, String::from(" -- ; start interpletation mode"), to_interpletation);
     vm.define_primitive_word("]".to_string(), false, String::from(" -- ; start compilation mode"), to_compilation);
@@ -24,7 +24,7 @@ pub fn preload_script() -> &'static str
 "#}
 
 /// モジュールの終了
-fn exit<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+fn quit<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
     vm.set_state(VmState::Return);
