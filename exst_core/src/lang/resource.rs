@@ -5,6 +5,7 @@
 use super::tokenizer::*;
 use super::utility::*;
 use super::vm::*;
+use super::value::*;
 use std::vec::*;
 use std::io;
 use std::collections::HashMap;
@@ -16,7 +17,7 @@ use std::io::Read;
 ///////////////////////////////////////////////////////////
 /// スクリプトの呼び出しスタック
 pub struct ScriptCallStack {
-    stack: Vec<(Box<dyn TokenIterator>,VmState)>
+    stack: Vec<(Box<dyn TokenIterator>,VmState,VmExecutionState,CodeAddress)>
 }
 impl ScriptCallStack {
 
@@ -37,15 +38,15 @@ impl ScriptCallStack {
     /// # Arguments
     /// * item - 追加するスクリプト
     /// 
-    pub fn push(&mut self, item: Box<dyn TokenIterator>, state: VmState) {
-        self.stack.push((item, state));
+    pub fn push(&mut self, item: Box<dyn TokenIterator>, state: VmState, exec_state: VmExecutionState, pc: CodeAddress) {
+        self.stack.push((item, state, exec_state, pc));
     }
 
     /// スタックの先頭を取得
     /// 
     /// # Return Values
     /// スタックの先頭。なければ、Option::None
-    pub fn pop(&mut self) -> Option<(Box<dyn TokenIterator>,VmState)> {
+    pub fn pop(&mut self) -> Option<(Box<dyn TokenIterator>,VmState,VmExecutionState,CodeAddress)> {
         self.stack.pop()
     }
 }
@@ -314,27 +315,27 @@ mod tests {
         assert_eq!(str1.next().unwrap().unwrap(), ValueToken::IntValue(1));
 
         //スタックに全部登録
-        stack.push(str1, VmState::Interpretation);
-        stack.push(str2, VmState::Interpretation);
-        stack.push(str3, VmState::Interpretation);
+        stack.push(str1, VmState::Interpretation, VmExecutionState::TokenIteration, From::from(0));
+        stack.push(str2, VmState::Interpretation, VmExecutionState::TokenIteration, From::from(0));
+        stack.push(str3, VmState::Interpretation, VmExecutionState::TokenIteration, From::from(0));
 
         //この時点では、スタックトップはstr3なので、１こ消費して内容を確認
-        let (mut str3, _) = stack.pop().unwrap();
+        let (mut str3, _, _, _) = stack.pop().unwrap();
         assert_eq!(str3.next().unwrap().unwrap(), ValueToken::IntValue(7));
 
         //スタックに戻す
-        stack.push(str3, VmState::Interpretation);
+        stack.push(str3, VmState::Interpretation, VmExecutionState::TokenIteration, From::from(0));
 
         //順番に内容を確認
 
         //str3は１こ消費しているので、２こ目のTokenが帰ってくる
-        let (mut str3, _) = stack.pop().unwrap();
+        let (mut str3, _, _, _) = stack.pop().unwrap();
         assert_eq!(str3.next().unwrap().unwrap(), ValueToken::IntValue(8));
         //str2は何もしてないので、１こ目のTokenが帰ってくる
-        let (mut str2, _) = stack.pop().unwrap();
+        let (mut str2, _, _, _) = stack.pop().unwrap();
         assert_eq!(str2.next().unwrap().unwrap(), ValueToken::IntValue(4));
         //str1は最初に１こ消費しているので、２こ目のTokenが帰ってくる
-        let (mut str1, _) = stack.pop().unwrap();
+        let (mut str1, _, _, _) = stack.pop().unwrap();
         assert_eq!(str1.next().unwrap().unwrap(), ValueToken::IntValue(2));
         //stackが空になったことを確認
         assert_eq!(stack.pop().is_none(), true);

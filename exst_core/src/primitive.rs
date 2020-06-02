@@ -29,9 +29,7 @@ pub fn preload<'a, V>(vm: &'a mut V, script: &'static str) -> &'a mut V
     where V: VmExecution
 {
     let token = Box::new(new_token_stream_from_str(script));
-    vm.reset_vm_state();
     vm.call_script(token);
-    vm.reset_vm_state();
     vm
 }
 

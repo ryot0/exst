@@ -46,7 +46,6 @@ impl<E,R,V> Executor<E,R,V>
     fn simple_exec(vm: &mut V, module: &String, args: &Vec<String>) -> Result<(),VmErrorReason<E>> {
         let start_module = vm.resources().get_token_iterator(module)?;
         vm.call_script(start_module);
-        vm.reset_vm_state();
         vm.exec_with_args(args)
     }
 

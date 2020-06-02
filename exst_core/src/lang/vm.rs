@@ -520,10 +520,11 @@ impl<T,E,R> Vm<T,E,R>
     /// スクリプトからのリターン処理の実行
     fn exec_return(&mut self) -> Result<(),VmErrorReason<E>> {
         match self.script_call_stack.pop() {
-            Some((i,s)) => {
+            Some((i,s,e,p)) => {
                 self.input = i;
                 self.state = s;
-                self.execution_state = VmExecutionState::TokenIteration;
+                self.execution_state = e;
+                self.program_counter = p;
                 self.debug_info_store.return_script();
             },
             None => {
@@ -563,7 +564,9 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
 
     fn call_script(&mut self, script: Box<dyn TokenIterator>) {
         self.debug_info_store.call_script(script.script_name());
-        self.script_call_stack.push(std::mem::replace(&mut self.input, script), self.state);
+        self.script_call_stack.push(std::mem::replace(&mut self.input, script), self.state, self.execution_state, self.program_counter);
+        self.state = VmState::Interpretation;
+        self.execution_state = VmExecutionState::TokenIteration;
     }
     fn resources_mut(&mut self) -> &mut Self::ResourcesType {
         &mut self.resources
@@ -848,8 +851,8 @@ mod tests {
         //w1をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w1"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w1);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.word_dictionary_mut().complate_word_def().unwrap();
@@ -857,8 +860,8 @@ mod tests {
         //w2をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w2"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w2);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.word_dictionary_mut().complate_word_def().unwrap();
@@ -866,15 +869,15 @@ mod tests {
         //w3をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w3"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w3);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.word_dictionary_mut().complate_word_def().unwrap();
         assert_eq!(v.data_stack_mut().pop().is_err(), true);
 
         //s1を実行
-        v.set_state(VmState::Interpretation);
+        //v.set_state(VmState::Interpretation);
         v.call_script(s1);
         v.exec().expect("!");
 
@@ -903,8 +906,8 @@ mod tests {
         //w1をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w1"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w1);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.word_dictionary_mut().complate_word_def().unwrap();
@@ -914,8 +917,8 @@ mod tests {
         //w2をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w2"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w2);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.word_dictionary_mut().complate_word_def().unwrap();
@@ -955,8 +958,8 @@ mod tests {
         //w1をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w1"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w1);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.code_buffer_mut().push(Instruction::DebugLabel(DebugLabel::WordTerminator));
@@ -965,8 +968,8 @@ mod tests {
         //w2をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w2"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w2);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.code_buffer_mut().push(Instruction::DebugLabel(DebugLabel::WordTerminator));
@@ -975,8 +978,8 @@ mod tests {
         //w3をコンパイルして登録
         let code_point = v.code_buffer_mut().here();
         v.word_dictionary_mut().reserve_word_def(String::from("w3"), Word::new(code_point));
-        v.set_state(VmState::Compilation);
         v.call_script(w3);
+        v.set_state(VmState::Compilation);
         v.exec().expect("!");
         v.code_buffer_mut().push(Instruction::Return);
         v.code_buffer_mut().push(Instruction::DebugLabel(DebugLabel::WordTerminator));
@@ -984,7 +987,7 @@ mod tests {
         assert_eq!(v.data_stack_mut().pop().is_err(), true);
 
         //s1を実行
-        v.set_state(VmState::Interpretation);
+        //v.set_state(VmState::Interpretation);
         v.call_script(s1);
         assert_eq!(
             match v.exec() {
