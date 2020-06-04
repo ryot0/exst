@@ -162,7 +162,7 @@ pub trait VmExecution {
 pub trait VmManipulation: Sized + VmExecution {
 
     /// 拡張型
-    type ExtraValueType: fmt::Display;
+    type ExtraValueType: fmt::Display + Eq + PartialEq + PartialOrd + Ord;
 
     /// データスタックの取得
     fn data_stack_mut(&mut self) -> &mut DataStack<Self::ExtraValueType>;
@@ -294,7 +294,7 @@ impl fmt::Display for VmExecutionState {
 ///////////////////////////////////////////////////////////
 /// Vmの実態
 pub struct Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     state: VmState,
     execution_state: VmExecutionState,
@@ -318,7 +318,7 @@ pub struct Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// コンストラクタなど
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     /// コンストラクタ
     /// 
@@ -352,7 +352,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// 実行処理の実態
 impl<T,E,R> Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     /// 1つの命令を実行する
     fn apply_instruction(&mut self, inst: Instruction<T,Self,VmErrorReason<E>>) -> Result<(),VmErrorReason<E>> {
@@ -536,7 +536,7 @@ impl<T,E,R> Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// ワード登録の実態
 impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     type ExtraPrimitiveWordErrorReasonType = E;
     type VmType = Self;
@@ -556,7 +556,7 @@ impl<T,E,R> VmPrimitiveWordStore for Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// Vm実行の実態
 impl<T,E,R> VmExecution for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     type ResourcesType = R;
     type ExtraPrimitiveWordErrorReasonType = E;
@@ -609,7 +609,7 @@ impl<T,E,R> VmExecution for Vm<T,E,R>
 ///////////////////////////////////////////////////////////
 /// Vm操作の実態
 impl<T,E,R> VmManipulation for Vm<T,E,R>
-    where T: fmt::Display + PartialEq + Eq, R: Resources, E: fmt::Debug
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, R: Resources, E: fmt::Debug
 {
     type ExtraValueType = T;
 

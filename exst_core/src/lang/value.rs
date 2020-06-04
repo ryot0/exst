@@ -330,7 +330,7 @@ impl fmt::Display for LongJumpFrame {
 ///////////////////////////////////////////////////////////
 /// 値
 /// 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug,Eq,PartialEq,Ord,PartialOrd)]
 pub enum Value<T> {
     /// 整数値
     IntValue(i32),
@@ -428,7 +428,7 @@ impl fmt::Display for TrapReason
 /// 命令
 /// 
 pub enum Instruction<T,V,E> 
-    where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, V: VmManipulation<ExtraValueType=T>
 {
     /// PUSH命令 - 値のPUSH
     Push(Rc<Value<T>>),
@@ -460,14 +460,14 @@ pub enum Instruction<T,V,E>
     PopJump,
 }
 impl<T,V,E> Default for Instruction<T,V,E>
-    where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, V: VmManipulation<ExtraValueType=T>
 {
     fn default() -> Self {
         Self::Nop
     }
 }
 impl<T,V,E> std::clone::Clone for Instruction<T,V,E>
-    where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, V: VmManipulation<ExtraValueType=T>
 {
     fn clone(&self) -> Self {
         match *self {
@@ -490,7 +490,7 @@ impl<T,V,E> std::clone::Clone for Instruction<T,V,E>
 }
 impl<T,V,E> fmt::Display for Instruction<T,V,E>
     where V: VmManipulation<ExtraValueType=T>,
-        T: fmt::Display
+    T: fmt::Display + PartialEq + Eq + PartialOrd + Ord
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

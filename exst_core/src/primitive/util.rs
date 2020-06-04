@@ -8,6 +8,29 @@ use super::super::lang::tokenizer::*;
 use super::super::lang::value::*;
 use std::rc::Rc;
 
+/// ( x x -- x )のワードの呼び出し
+pub fn call_xxfx<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
+    where V: VmManipulation,
+          F: Fn(Rc<Value<V::ExtraValueType>>,Rc<Value<V::ExtraValueType>>) -> Value<V::ExtraValueType>,
+          E: std::fmt::Debug
+{
+    let lhs = vm.data_stack_mut().pop()?;
+    let rhs = vm.data_stack_mut().pop()?;
+    vm.data_stack_mut().push(Rc::new(f(lhs, rhs)));
+    Result::Ok(())
+}
+
+/// ( x -- x )のワードの呼び出し
+pub fn call_xfx<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
+    where V: VmManipulation,
+          F: Fn(Rc<Value<V::ExtraValueType>>) -> Value<V::ExtraValueType>,
+          E: std::fmt::Debug
+{
+    let lhs = vm.data_stack_mut().pop()?;
+    vm.data_stack_mut().push(Rc::new(f(lhs)));
+    Result::Ok(())
+}
+
 /// ( int int -- int )のワードの呼び出し
 pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,

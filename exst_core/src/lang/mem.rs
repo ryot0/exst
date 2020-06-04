@@ -335,10 +335,10 @@ impl From<BufferAddressErrorReason> for CodeBufferErrorReason {
 /// `BufferMemory`のラッパー
 /// 
 pub struct CodeBuffer<T,V,E>(BufferMemory<Instruction<T,V,E>>)
-    where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, V: VmManipulation<ExtraValueType=T>
 ;
 impl<T,V,E> CodeBuffer<T,V,E> 
-    where T: fmt::Display, V: VmManipulation<ExtraValueType=T>
+    where T: fmt::Display + PartialEq + Eq + PartialOrd + Ord, V: VmManipulation<ExtraValueType=T>
 {
     pub fn new() -> Self {
         CodeBuffer(
@@ -365,7 +365,7 @@ impl<T,V,E> CodeBuffer<T,V,E>
 }
 impl<T,V,E> fmt::Display for CodeBuffer<T,V,E> 
     where V: VmManipulation<ExtraValueType=T>,
-        T: fmt::Display
+    T: fmt::Display + PartialEq + Eq + PartialOrd + Ord
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "CodeBuffer{}", self.0)
