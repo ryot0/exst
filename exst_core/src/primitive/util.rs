@@ -63,22 +63,10 @@ pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
           E: std::fmt::Debug
 {
     call_xxfr(vm, |lhs,rhs|{
-        match *rhs {
-            Value::IntValue(rhs) => {
-                match *lhs {
-                    Value::IntValue(lhs) => {
-                        Result::Ok(Value::IntValue(f(lhs, rhs)))
-                    },
-                    _ => { 
-                        Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), lhs.type_name()))
-                     }
-                }
-            },
-            _ => {
-                Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), rhs.type_name()))
-            }
-        }
-    } )
+        let lv = (*lhs).try_into()?;
+        let rv = (*rhs).try_into()?;
+        Result::Ok(Value::IntValue(f(*lv, *rv)))
+    })
 }
 
 /// ( int -- int )のワードの呼び出し
@@ -88,15 +76,9 @@ pub fn call_ifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
           E: std::fmt::Debug
 {
     call_xfr(vm, |rhs|{
-        match *rhs {
-            Value::IntValue(rhs) => {
-                Result::Ok(Value::IntValue(f(rhs)))
-            },
-            _ => {
-                Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), rhs.type_name()))
-            }
-        }
-    } )
+        let v = (*rhs).try_into()?;
+        Result::Ok(Value::IntValue(f(*v)))
+    })
 }
 
 /// 次のsymbol tokenを使用するワードの呼び出し
@@ -113,12 +95,12 @@ pub fn call_with_name<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
                     f(vm, &name)
                 },
                 _ => {
-                    Result::Err(VmErrorReason::TypeMismatchError("Symbol", "UNKNOWN"))
+                    Result::Err(From::from(TypeMismatchError("Symbol", "UNKNOWN")))
                 }
             }
         },
         Option::None => {
-            Result::Err(VmErrorReason::TypeMismatchError("Symbol", "EMPTY"))
+            Result::Err(From::from(TypeMismatchError("Symbol", "EMPTY")))
         },
     }
 }

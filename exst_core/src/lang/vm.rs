@@ -76,7 +76,7 @@ pub enum VmErrorReason<E: fmt::Debug> {
     /// 外部関数エラー
     ExtraPrimitiveWordError(E),
     /// 型変換エラー
-    TypeMismatchError(&'static str, &'static str),
+    TypeMismatchError(TypeMismatchError),
     /// Trap
     TrapError(TrapReason),
     /// 命令実行エラー
@@ -130,6 +130,11 @@ impl<E: fmt::Debug> From<TokenizerError> for VmErrorReason<E> {
 impl<E: fmt::Debug> From<ResourceErrorReason> for VmErrorReason<E> {
     fn from(e: ResourceErrorReason) -> Self {
         Self::ResourceError(e)
+    }
+}
+impl<E: fmt::Debug> From<TypeMismatchError> for VmErrorReason<E> {
+    fn from(e: TypeMismatchError) -> Self {
+        Self::TypeMismatchError(e)
     }
 }
 

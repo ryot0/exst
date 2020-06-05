@@ -327,6 +327,15 @@ impl fmt::Display for LongJumpFrame {
     }
 }
 
+pub trait ValueTryInto<T> {
+    type Error;
+    fn try_into(&self) -> Result<&T,Self::Error>;
+}
+///////////////////////////////////////////////////////////
+/// 値の変換エラー
+/// 
+#[derive(Debug)]
+pub struct TypeMismatchError(pub &'static str, pub &'static str);
 ///////////////////////////////////////////////////////////
 /// 値
 /// 
@@ -374,6 +383,62 @@ impl<T> fmt::Display for Value<T>
             Self::DataAddress(v) => write!(f, "Value({})", v),
             Self::ExtValue(v) => write!(f, "{}", v),
             Self::Empty => write!(f, "Value(EMPTY)"),
+        }
+    }
+}
+impl<T> ValueTryInto<i32> for Value<T>
+    where T: fmt::Display
+{
+    type Error = TypeMismatchError;
+    fn try_into(&self) -> Result<&i32,Self::Error> {
+        match self {
+            Value::IntValue(v) => Result::Ok(v),
+            _ => Result::Err(TypeMismatchError(int_type_name(), self.type_name())),
+        }
+    }
+}
+impl<T> ValueTryInto<String> for Value<T>
+    where T: fmt::Display
+{
+    type Error = TypeMismatchError;
+    fn try_into(&self) -> Result<&String,Self::Error> {
+        match self {
+            Value::StrValue(v) => Result::Ok(v),
+            _ => Result::Err(TypeMismatchError(str_type_name(), self.type_name())),
+        }
+    }
+}
+impl<T> ValueTryInto<CodeAddress> for Value<T>
+    where T: fmt::Display
+{
+    type Error = TypeMismatchError;
+    fn try_into(&self) -> Result<&CodeAddress,Self::Error> {
+        match self {
+            Value::CodeAddress(v) => Result::Ok(v),
+            _ => Result::Err(TypeMismatchError(code_address_type_name(), self.type_name())),
+        }
+    }
+}
+impl<T> ValueTryInto<DataAddress> for Value<T>
+    where T: fmt::Display
+{
+    type Error = TypeMismatchError;
+    fn try_into(&self) -> Result<&DataAddress,Self::Error> {
+        match self {
+            Value::DataAddress(v) => Result::Ok(v),
+            _ => Result::Err(TypeMismatchError(data_address_type_name(), self.type_name())),
+        }
+    }
+}
+impl<T> Value<T>
+    where T: fmt::Display
+{
+    pub fn try_into_usize(&self) -> Result<usize,TypeMismatchError> {
+        match self {
+            Value::IntValue(v) => {
+                Result::Ok(*v as usize)
+            },
+            _ => Result::Err(TypeMismatchError(int_type_name(), self.type_name())),
         }
     }
 }
