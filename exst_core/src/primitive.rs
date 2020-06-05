@@ -6,6 +6,7 @@ mod stack;
 mod data;
 mod arithmetic;
 mod logical;
+mod bit;
 mod io;
 mod system;
 mod debug;
@@ -50,6 +51,7 @@ pub fn initialize<V>(vm: &mut V)
     word::initialize(vm);
     arithmetic::initialize(vm);
     logical::initialize(vm);
+    bit::initialize(vm);
     exception::initialize(vm);
     controlflow::initialize(vm);
     io::initialize(vm);
@@ -63,6 +65,7 @@ pub fn initialize<V>(vm: &mut V)
     preload(vm, word::preload_script()).exec().unwrap();
     preload(vm, arithmetic::preload_script()).exec().unwrap();
     preload(vm, logical::preload_script()).exec().unwrap();
+    preload(vm, bit::preload_script()).exec().unwrap();
     preload(vm, exception::preload_script()).exec().unwrap();
     preload(vm, controlflow::preload_script()).exec().unwrap();
     preload(vm, io::preload_script()).exec().unwrap();

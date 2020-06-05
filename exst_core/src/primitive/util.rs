@@ -21,6 +21,18 @@ fn call_xxfr<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     Result::Ok(())
 }
 
+/// ( x -- Result )のワードの呼び出し
+fn call_xfr<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
+    where V: VmManipulation,
+          F: Fn(Rc<Value<V::ExtraValueType>>) -> Result<Value<V::ExtraValueType>,VmErrorReason<E>>,
+          E: std::fmt::Debug
+{
+    let rhs = vm.data_stack_mut().pop()?;
+    let v = f(rhs)?;
+    vm.data_stack_mut().push(Rc::new(v));
+    Result::Ok(())
+}
+
 /// ( x x -- x )のワードの呼び出し
 pub fn call_xxfx<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,
@@ -61,6 +73,24 @@ pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
                         Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), lhs.type_name()))
                      }
                 }
+            },
+            _ => {
+                Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), rhs.type_name()))
+            }
+        }
+    } )
+}
+
+/// ( int -- int )のワードの呼び出し
+pub fn call_ifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
+    where V: VmManipulation,
+          F: Fn(i32) -> i32,
+          E: std::fmt::Debug
+{
+    call_xfr(vm, |rhs|{
+        match *rhs {
+            Value::IntValue(rhs) => {
+                Result::Ok(Value::IntValue(f(rhs)))
             },
             _ => {
                 Result::Err(VmErrorReason::TypeMismatchError(int_type_name(), rhs.type_name()))
