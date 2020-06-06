@@ -84,7 +84,7 @@ pub fn call_ifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
 /// 次のsymbol tokenを使用するワードの呼び出し
 pub fn call_with_name<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,
-          F: Fn(&mut V, &String) -> Result<(),VmErrorReason<E>>,
+          F: Fn(&mut V, String) -> Result<(),VmErrorReason<E>>,
           E: std::fmt::Debug
 {
     match vm.input_stream_mut().next_token() {
@@ -92,7 +92,7 @@ pub fn call_with_name<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
             let token = t.value_token?;
             match token {
                 ValueToken::Symbol(name) => {
-                    f(vm, &name)
+                    f(vm, name)
                 },
                 _ => {
                     Result::Err(From::from(TypeMismatchError("Symbol", "UNKNOWN")))
