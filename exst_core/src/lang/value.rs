@@ -433,12 +433,26 @@ impl<T> ValueTryInto<DataAddress> for Value<T>
 impl<T> Value<T>
     where T: fmt::Display
 {
+    /// Value::IntValueをusizeにキャストする
     pub fn try_into_usize(&self) -> Result<usize,TypeMismatchError> {
         match self {
             Value::IntValue(v) => {
                 Result::Ok(*v as usize)
             },
             _ => Result::Err(TypeMismatchError(int_type_name(), self.type_name())),
+        }
+    }
+
+    /// Value::StrValueの先頭１文字をcharとして取得する
+    pub fn try_into_char(&self) -> Result<char,TypeMismatchError> {
+        match self {
+            Value::StrValue(v) => {
+                match v.chars().next() {
+                    Some(c) => Result::Ok(c),
+                    None => Result::Err(TypeMismatchError("CHAR", self.type_name())),
+                }
+            },
+            _ => Result::Err(TypeMismatchError(str_type_name(), self.type_name())),
         }
     }
 }

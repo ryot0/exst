@@ -78,6 +78,9 @@ impl TokenIterator for EmptyTokenStream
     fn script_name(&self) -> &String {
         &self.script_name
     }
+    fn skip(&mut self, _: char) -> Result<String,TokenizerError> {
+        Result::Ok(String::new())
+    }
 }
 
 ///////////////////////////////////////////////////////////

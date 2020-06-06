@@ -204,6 +204,15 @@ pub trait TokenIterator: Iterator<Item=TokenStreamItem> {
     /// # Return Values
     /// スクリプト名
     fn script_name(&self) -> &String;
+
+    /// 指定された文字が出現するまでスキップする
+    /// 
+    /// # Arguments
+    /// * end_char - この文字が出現するまで読み飛ばす
+    /// 
+    /// # Return Values
+    /// 読み飛ばした文字列
+    fn skip(&mut self, end_char: char) -> Result<String,TokenizerError>;
 }
 ///////////////////////////////////////////////////////////
 /// Iterator<Item=io::Result<char>>に値の書き戻し機能を追加した構造体
@@ -449,6 +458,31 @@ impl<I> TokenIterator for TokenStream<I>
     /// スクリプト名を取得
     fn script_name(&self) -> &String {
         &self.script_name
+    }
+
+    /// 読み飛ばす
+    fn skip(&mut self, end_char: char) -> Result<String,TokenizerError> {
+        let mut skip_str = String::new();
+        for next in &mut self.input {
+            match next {
+                Result::Ok(c) if c == end_char => {
+                    return Result::Ok(skip_str);
+                },
+                Result::Ok(c) => {
+                    skip_str.push(c);
+                },
+                Result::Err(e) => {
+                    return Result::Err(
+                        TokenizerError(
+                            self.input.line_number(),
+                            self.input.column_number(),
+                            TokenizerErrorReason::IOError(e),
+                        )
+                    );
+                },
+            }
+        };
+        Result::Ok(skip_str)
     }
 }
 ///////////////////////////////////////////////////////////
