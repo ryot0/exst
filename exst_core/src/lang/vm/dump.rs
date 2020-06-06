@@ -21,7 +21,7 @@ impl<'a, V> fmt::Display for VmDump<'a, V>
 /// 
 /// Vmオブジェクトと引数１つとそれを引数にとる関数を保持し、Display Traitの中で呼び出す
 /// 
-pub struct VmDump1<'a, V: VmManipulation, T>( pub &'a V, &'a T, pub fn(&V, &T, &mut fmt::Formatter) -> fmt::Result );
+pub struct VmDump1<'a, V: VmManipulation, T>( pub &'a V, pub &'a T, pub fn(&V, &T, &mut fmt::Formatter) -> fmt::Result );
 impl<'a, V, T> fmt::Display for VmDump1<'a, V, T>
     where V: VmManipulation
 {
@@ -35,7 +35,7 @@ impl<'a, V, T> fmt::Display for VmDump1<'a, V, T>
 /// # Arguments
 /// * v - Vm
 /// * f - 出力先
-pub fn dump_vm_sate<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result {
+pub fn dump_vm_state<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result {
     writeln!(f, "vm state: {}", v.state())?;
     match v.word_dictionary().guess_name(&v.program_counter()) {
         Option::Some(wname) => {
@@ -278,7 +278,7 @@ pub fn dump_controlflow_stack<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) 
 /// * f - 出力先
 pub fn dump_all_info<V: VmManipulation>(v: &V, f: &mut fmt::Formatter) -> fmt::Result {
     writeln!(f, "##### Vm State #########################################")?;
-    dump_vm_sate(v, f)?;
+    dump_vm_state(v, f)?;
     writeln!(f, "##### Word Definition ##################################")?;
     dump_all_word_code(v, f)?;
     writeln!(f, "##### Controlflow Stack ################################")?;
