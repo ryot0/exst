@@ -44,10 +44,10 @@ pub fn initialize<V>(vm: &mut V)
     where V: VmPrimitiveWordStore + VmExecution
 {
     // 組み込みワードの登録
+    compile::initialize(vm);
     stack::initialize(vm);
     data::initialize(vm);
     system::initialize(vm);
-    compile::initialize(vm);
     word::initialize(vm);
     arithmetic::initialize(vm);
     logical::initialize(vm);
@@ -58,10 +58,10 @@ pub fn initialize<V>(vm: &mut V)
     debug::initialize(vm);
 
     // 関連するワードを組み込みスクリプトから登録
+    preload(vm, compile::preload_script()).exec().unwrap();
     preload(vm, stack::preload_script()).exec().unwrap();
     preload(vm, data::preload_script()).exec().unwrap();
     preload(vm, system::preload_script()).exec().unwrap();
-    preload(vm, compile::preload_script()).exec().unwrap();
     preload(vm, word::preload_script()).exec().unwrap();
     preload(vm, arithmetic::preload_script()).exec().unwrap();
     preload(vm, logical::preload_script()).exec().unwrap();

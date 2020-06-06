@@ -18,16 +18,16 @@ pub fn initialize<V>(vm: &mut V)
 pub fn preload_script() -> &'static str
 {r#"
     #?dup
-    #swap
-    #over
-    #rot
-    #down
-    #nip
-    #tuck
-    #2drop
-    #2dup
-    #2over
-    #2swap
+    : swap ( a b -- b a; ) 1 roll ;
+    : over ( a b -- a b a; ) 1 pick ;
+    : rot ( a b c -- b c a; ) 2 roll ;
+    : down ( a b c -- c a b; ) rot rot ;
+    : nip ( a b -- b; ) swap drop ;
+    : tuck ( a b -- b a b; ) swap over ;
+    : 2drop ( a b -- ; ) drop drop ;
+    : 2dup ( a b -- ; ) over over ;
+    : 2over ( a b c d -- a b c d a b ; ) 3 pick 2 pick ;
+    : 2swap ( a b c d -- c d a b ; ) 3 roll 3 roll ;
 "#}
 
 /// drop
