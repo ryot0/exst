@@ -353,6 +353,9 @@ impl<T,V,E> CodeBuffer<T,V,E>
         let address = address.adr()?;
         self.0.set(address, value).map_err(From::from)
     }
+    pub fn pop(&mut self) -> Result<Instruction<T,V,E>,CodeBufferErrorReason> {
+        self.0.pop().map_err(From::from)
+    }
     pub fn push(&mut self, value: Instruction<T,V,E>) -> CodeAddress {
         From::from(self.0.push(value))
     }

@@ -13,9 +13,9 @@ pub fn initialize<V>(vm: &mut V)
 {
     vm.define_primitive_word("dump-all".to_string(), false, String::from(" -- ; dump all debug info"), dump_all);
     vm.define_primitive_word("dump-vm-state".to_string(), false, String::from(" -- ; dump all debug info"), dump_vm_state);
-    vm.define_primitive_word("dump-word".to_string(), false, String::from("\"word name\" -- ; dump word code"), dump_word);
+    vm.define_primitive_word("see".to_string(), false, String::from("\"word name\" -- ; dump word code"), dump_word);
     vm.define_primitive_word("dump-all-word".to_string(), false, String::from(" -- ; dump all word code"), dump_all_word);
-    vm.define_primitive_word("dump-dictionary".to_string(), false, String::from(" -- ; dump dictionary"), dump_dictionary);
+    vm.define_primitive_word("words".to_string(), false, String::from(" -- ; dump dictionary"), dump_dictionary);
     vm.define_primitive_word("dump-stack".to_string(), false, String::from(" -- ; dump data stack"), dump_stack);
     vm.define_primitive_word("dump-env".to_string(), false, String::from(" -- ; dump environment stack"), dump_env);
     vm.define_primitive_word("dump-controlflow-stack".to_string(), false, String::from(" -- ; dump controlflow stack"), dump_controlflow_stack);
@@ -45,7 +45,7 @@ where E: std::fmt::Debug
     Result::Ok(())
 }
 
-/// dump-word
+/// see
 fn dump_word<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
@@ -65,7 +65,7 @@ where E: std::fmt::Debug
     Result::Ok(())
 }
 
-/// dump-dictionary
+/// words
 fn dump_dictionary<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {

@@ -17,12 +17,11 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word(":noname".to_string(), false, String::from(" -- ; define anonimous word"), noname);
     vm.define_primitive_word(":recursive".to_string(), false, String::from("\"word name\" -- ; define recursible word"), recursive);
     vm.define_primitive_word(";".to_string(), true, String::from(" -- ; word definition terminator"), semicolon);
-    vm.define_primitive_word("immidiate".to_string(), false, String::from(" -- ; change to immidiate word"), immidiate);
+    vm.define_primitive_word("immediate".to_string(), false, String::from(" -- ; change to immediate word"), immediate);
     vm.define_primitive_word("defer".to_string(), false, String::from("\"word name\" -- ; defer word"), defer);
     vm.define_primitive_word("'".to_string(), false, String::from("\"word name\" -- xt; push execution token"), tick);
     vm.define_primitive_word("[']".to_string(), true, String::from("\"word name\" -- xt; push execution token"), tick);
     vm.define_primitive_word("is".to_string(), false, String::from("xt \"word name\" -- ; set execution token to defer word"), is);
-    //execute
     vm.define_primitive_word("create".to_string(), false, String::from("\"word name\" -- ; create with data buffer"), create);
     //does>
     vm.define_primitive_word("recurse".to_string(), true, String::from(" -- ; recursive call"), recurse);
@@ -31,7 +30,9 @@ pub fn initialize<V>(vm: &mut V)
 /// 起動時に実行するスクリプト
 pub fn preload_script() -> &'static str
 {r#"
-
+    : execute ( xt -- ; execute xt )
+        [__exec__]
+    ;
 "#}
 
 /// コロン定義
@@ -79,8 +80,8 @@ where E: std::fmt::Debug
     Result::Ok(())
 }
 
-/// immidiate
-fn immidiate<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+/// immediate
+fn immediate<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
     vm.word_dictionary_mut().last_word_change_immidiate();
