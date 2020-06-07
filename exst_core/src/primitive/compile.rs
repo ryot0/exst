@@ -21,6 +21,7 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("cdp".to_string(), false, String::from(" -- cdp; get code buffer address"), cdp);
     vm.define_primitive_word("__dummy_instruction__".to_string(), false, String::from(" -- ; compile instruction: dummy"), trap_dummy_instruction_execution);
     vm.define_primitive_word("__user_trap__".to_string(), false, String::from(" -- ; compile instruction: user trap"), trap_user_trap);
+    vm.define_primitive_word("[__user_trap__]".to_string(), true, String::from(" -- ; compile instruction: user trap"), trap_user_trap);
     vm.define_primitive_word("__jump__".to_string(), false, String::from("adr -- ; compile instruction: jump"), jump);
     vm.define_primitive_word("__branch__".to_string(), false, String::from("adr -- ; compile instruction: branch"), branch);
     vm.define_primitive_word("__exec__".to_string(), false, String::from(" -- ; compile instruction: exec"), exec);

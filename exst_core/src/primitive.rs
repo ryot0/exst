@@ -52,8 +52,8 @@ pub fn initialize<V>(vm: &mut V)
     arithmetic::initialize(vm);
     logical::initialize(vm);
     bit::initialize(vm);
-    exception::initialize(vm);
     controlflow::initialize(vm);
+    exception::initialize(vm);
     io::initialize(vm);
     debug::initialize(vm);
 
@@ -66,8 +66,8 @@ pub fn initialize<V>(vm: &mut V)
     preload(vm, arithmetic::preload_script()).exec().unwrap();
     preload(vm, logical::preload_script()).exec().unwrap();
     preload(vm, bit::preload_script()).exec().unwrap();
-    preload(vm, exception::preload_script()).exec().unwrap();
     preload(vm, controlflow::preload_script()).exec().unwrap();
+    preload(vm, exception::preload_script()).exec().unwrap();
     preload(vm, io::preload_script()).exec().unwrap();
     preload(vm, debug::preload_script()).exec().unwrap();
 }

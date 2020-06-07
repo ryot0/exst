@@ -24,7 +24,17 @@ pub fn initialize<V>(vm: &mut V)
 /// 起動時に実行するスクリプト
 pub fn preload_script() -> &'static str
 {r#"
+    : trap ( -- ; trap anytime )
+        [__user_trap__]
+    ;
 
+    : assert ( flg -- ; if flg is false then trap )
+        ! if [__user_trap__] endif
+    ;
+
+    : assert-eq ( a b -- ; if a <> b then trap )
+        <> if [__user_trap__] endif
+    ;
 "#}
 
 /// dump-all
