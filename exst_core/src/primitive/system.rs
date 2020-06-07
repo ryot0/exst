@@ -62,6 +62,8 @@ where E: std::fmt::Debug
     util::call_with_name(vm, |v, name|{
         let target = v.resources().get_token_iterator(&name)?;
         v.call_script(target);
+        v.set_state(VmState::Interpretation);
+        v.set_exec_state(VmExecutionState::TokenIteration);
         Result::Ok(())
     })
 }

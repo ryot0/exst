@@ -201,6 +201,15 @@ pub trait VmManipulation: Sized + VmExecution {
     /// # Return Values
     /// 変更前のVM状態
     fn set_state(&mut self, new_state: VmState) -> VmState;
+
+    /// VM状態の取得
+    fn exec_state(&self) -> VmExecutionState;
+    
+    /// VM状態の変更
+    /// 
+    /// # Return Values
+    /// 変更前のVM状態
+    fn set_exec_state(&mut self, new_state: VmExecutionState) -> VmExecutionState;
     
     /// プログラムカウンタの取得
     fn program_counter(&self) -> CodeAddress;
@@ -525,10 +534,11 @@ impl<T,E,R> Vm<T,E,R>
     /// スクリプトからのリターン処理の実行
     fn exec_return(&mut self) -> Result<(),VmErrorReason<E>> {
         match self.script_call_stack.pop() {
-            Some((i,s,_e,_p)) => {
+            Some((i,s,e,p)) => {
                 self.input = i;
                 self.state = s;
-                self.execution_state = VmExecutionState::TokenIteration;
+                self.execution_state = e;
+                self.program_counter = p;
                 self.debug_info_store.return_script();
             },
             None => {
@@ -659,6 +669,12 @@ impl<T,E,R> VmManipulation for Vm<T,E,R>
     }
     fn set_state(&mut self, new_state: VmState) -> VmState {
         std::mem::replace(&mut self.state, new_state)
+    }
+    fn exec_state(&self) -> VmExecutionState {
+        self.execution_state
+    }
+    fn set_exec_state(&mut self, new_state: VmExecutionState) -> VmExecutionState {
+        std::mem::replace(&mut self.execution_state, new_state)
     }
     fn program_counter(&self) -> CodeAddress {
         self.program_counter
