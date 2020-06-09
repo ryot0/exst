@@ -26,6 +26,8 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("__branch__".to_string(), false, String::from("adr -- ; compile instruction: branch"), branch);
     vm.define_primitive_word("__exec__".to_string(), false, String::from(" -- ; compile instruction: exec"), exec);
     vm.define_primitive_word("[__exec__]".to_string(), true, String::from(" -- ; compile instruction: exec"), exec);
+    vm.define_primitive_word("__return__".to_string(), false, String::from(" -- ; compile instruction: return"), ret);
+    vm.define_primitive_word("[__return__]".to_string(), true, String::from(" -- ; compile instruction: return"), ret);
     vm.define_primitive_word("instruction-at".to_string(), false, String::from("adr -- ; code_buffer[adr] = code_buffer.pop"), instruction_at);
     vm.define_primitive_word("postpone".to_string(), true, String::from("\"word name\" -- ; postpone word"), postpone);
 }
@@ -148,6 +150,14 @@ fn exec<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
     vm.code_buffer_mut().push(Instruction::Exec);
+    Result::Ok(())
+}
+
+/// Returnにコンパイル
+fn ret<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
+{
+    vm.code_buffer_mut().push(Instruction::Return);
     Result::Ok(())
 }
 

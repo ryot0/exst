@@ -23,7 +23,7 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("[']".to_string(), true, String::from("\"word name\" -- xt; push execution token"), tick);
     vm.define_primitive_word("is".to_string(), false, String::from("xt \"word name\" -- ; set execution token to defer word"), is);
     vm.define_primitive_word("create".to_string(), false, String::from("\"word name\" -- ; create with data buffer"), create);
-    //does>
+    vm.define_primitive_word("does".to_string(), false, String::from("adr -- ; this word is used in does>"), does);
     vm.define_primitive_word("recurse".to_string(), true, String::from(" -- ; recursive call"), recurse);
 }
 
@@ -33,6 +33,19 @@ pub fn preload_script() -> &'static str
     : execute ( xt -- ; execute xt )
         [__exec__]
     ;
+
+    : exit (  -- ; exit word )
+        __return__
+    ; immediate
+
+    : does> ( -- ; does )
+        cdp
+        __dummy_instruction__
+        postpone does
+        __return__
+        cdp [compile] literal
+        instruction-at
+    ; immediate
 "#}
 
 /// コロン定義
@@ -152,5 +165,18 @@ where E: std::fmt::Debug
     let w = vm.word_dictionary().find_last_word()?;
     let callee = w.code();
     vm.code_buffer_mut().push(compile_call_code_address(callee));
+    Result::Ok(())
+}
+
+/// does>
+fn does<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
+{
+    let top = vm.data_stack_mut().pop()?;
+    let adr: &CodeAddress = (*top).try_into()?;
+    vm.code_buffer_mut().pop()?; //word terminator
+    vm.code_buffer_mut().pop()?; //return
+    vm.code_buffer_mut().push(compile_jump(*adr));
+    vm.code_buffer_mut().push(compile_word_terminator());
     Result::Ok(())
 }

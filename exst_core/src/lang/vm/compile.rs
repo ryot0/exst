@@ -90,6 +90,17 @@ pub fn compile_branch<V: VmManipulation>(adr: CodeAddress) -> Instruction<V::Ext
     Instruction::Branch(adr)
 }
 
+/// Jump命令のコンパイル
+/// 
+/// # Arguments
+/// * adr - ジャンプ先アドレス
+/// 
+/// # Return Values
+/// 命令
+pub fn compile_jump<V: VmManipulation>(adr: CodeAddress) -> Instruction<V::ExtraValueType,V,VmErrorReason<V::ExtraPrimitiveWordErrorReasonType>> {
+    Instruction::Jump(adr)
+}
+
 /// Exec命令のコンパイル
 /// 
 /// # Arguments
