@@ -19,7 +19,12 @@ pub fn initialize<V>(vm: &mut V)
 /// 起動時に実行するスクリプト
 pub fn preload_script() -> &'static str
 {r#"
-
+    : 1+ ( a -- [a+1]; increament )
+        1 +
+    ;
+    : 1- ( a -- [a-1]; decreament )
+        1 -
+    ;
 "#}
 
 /// 足し算
