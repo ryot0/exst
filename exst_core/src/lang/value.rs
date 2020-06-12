@@ -349,6 +349,8 @@ pub enum Value<T> {
     CodeAddress(CodeAddress),
     /// データアドレス
     DataAddress(DataAddress),
+    /// 環境スタックの相対アドレス
+    EnvAddress(EnvironmentStackRelativeAddress),
     /// 拡張値
     ExtValue(T),
     /// 空（デフォルト値）
@@ -367,6 +369,7 @@ impl<T> Value<T> {
             Self::StrValue(_) => str_type_name(),
             Self::CodeAddress(_) => code_address_type_name(),
             Self::DataAddress(_) => data_address_type_name(),
+            Self::EnvAddress(_) => env_address_type_name(),
             Self::ExtValue(_) => extra_type_name(),
             Self::Empty => empty_type_name(),
         }
@@ -379,8 +382,9 @@ impl<T> fmt::Display for Value<T>
         match self {
             Self::IntValue(v) => write!(f, "{}", v),
             Self::StrValue(v) => write!(f, "{}", v),
-            Self::CodeAddress(v) => write!(f, "Value({})", v),
-            Self::DataAddress(v) => write!(f, "Value({})", v),
+            Self::CodeAddress(v) => write!(f, "{}", v),
+            Self::DataAddress(v) => write!(f, "{}", v),
+            Self::EnvAddress(v) => write!(f, "{}", v),
             Self::ExtValue(v) => write!(f, "{}", v),
             Self::Empty => write!(f, "Value(EMPTY)"),
         }
@@ -465,6 +469,8 @@ pub fn str_type_name() -> &'static str { "STR" }
 pub fn code_address_type_name() -> &'static str { "CODE_ADDRESS" }
 /// データアドレス型名を返す
 pub fn data_address_type_name() -> &'static str { "DATA_ADDRESS" }
+/// 環境スタック相対アドレス型名を返す
+pub fn env_address_type_name() -> &'static str { "ENV_ADDRESS" }
 /// 拡張型名を返す
 pub fn extra_type_name() -> &'static str { "EXTRA" }
 /// 空型名を返す

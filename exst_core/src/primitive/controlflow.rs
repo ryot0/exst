@@ -29,7 +29,7 @@ pub fn preload_script() -> &'static str
     ;
 
     : if ( cond -- ; if statement )
-        postpone !
+        postpone !!
         cdp >C
         __dummy_instruction__
     ; immediate

@@ -426,12 +426,22 @@ impl<T,E,R> Vm<T,E,R>
             },
             Instruction::Exec => {
                 let top = self.data_stack.pop()?;
-                if let Value::CodeAddress(adr) = *top {
-                    //環境を退避して、オペランドのアドレスにジャンプ
-                    self.return_stack.push(self.program_counter.next(), self.env_stack.here());
-                    self.program_counter = adr;
-                } else {
-                    return Result::Err(VmErrorReason::InstructionError("Exec"));
+                match *top {
+                    Value::CodeAddress(adr) => {
+                        //環境を退避して、オペランドのアドレスにジャンプ
+                        self.return_stack.push(self.program_counter.next(), self.env_stack.here());
+                        self.program_counter = adr;
+                    },
+                    Value::EnvAddress(adr) => {
+                        //オペランドで指定された環境スタックの場所の値をデータスタックにプッシュ
+                        let base = self.return_stack.peek()?;
+                        let val = self.env_stack.get(base.stack_address(), adr)?;
+                        self.data_stack.push(val);
+                        self.program_counter = self.program_counter.next();
+                    },
+                    _ => {
+                        self.data_stack_mut().push(top);
+                    },
                 }
             },
             Instruction::SetJump(adr) => {

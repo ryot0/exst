@@ -121,9 +121,16 @@ fn tick<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
     util::call_with_name(vm, |v, name|{
-        let w = v.word_dictionary().find_word(&name)?;
-        let adr = w.code();
-        v.data_stack_mut().push(Rc::new(Value::CodeAddress(adr)));
+        match v.local_dictionary().find(&name) {
+            Option::Some(adr) => {
+                v.data_stack_mut().push(Rc::new(Value::EnvAddress(adr)));
+            },
+            Option::None => {
+                let w = v.word_dictionary().find_word(&name)?;
+                let adr = w.code();
+                v.data_stack_mut().push(Rc::new(Value::CodeAddress(adr)));
+            },
+        }
         Result::Ok(())
     })
 }

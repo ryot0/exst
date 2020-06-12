@@ -12,7 +12,7 @@ pub fn initialize<V>(vm: &mut V)
 {
     vm.define_primitive_word("&&".to_string(), false, String::from("a b -- [a and b]; "), and);
     vm.define_primitive_word("||".to_string(), false, String::from("a b -- [a or b]; "), or);
-    vm.define_primitive_word("!".to_string(), false, String::from("a -- [not a]; "), not);
+    vm.define_primitive_word("!!".to_string(), false, String::from("a -- [not a]; "), not);
     vm.define_primitive_word("=".to_string(), false, String::from("a b -- [a==b]; "), eq);
     vm.define_primitive_word("<>".to_string(), false, String::from("a b -- [a<>b]; "), noteq);
     vm.define_primitive_word("<".to_string(), false, String::from("a b -- [a<b]; "), less);

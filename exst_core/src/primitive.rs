@@ -46,9 +46,9 @@ pub fn initialize<V>(vm: &mut V)
     // 組み込みワードの登録
     compile::initialize(vm);
     stack::initialize(vm);
-    data::initialize(vm);
     system::initialize(vm);
     word::initialize(vm);
+    data::initialize(vm);
     arithmetic::initialize(vm);
     logical::initialize(vm);
     bit::initialize(vm);
@@ -60,9 +60,9 @@ pub fn initialize<V>(vm: &mut V)
     // 関連するワードを組み込みスクリプトから登録
     preload(vm, compile::preload_script()).exec().unwrap();
     preload(vm, stack::preload_script()).exec().unwrap();
-    preload(vm, data::preload_script()).exec().unwrap();
     preload(vm, system::preload_script()).exec().unwrap();
     preload(vm, word::preload_script()).exec().unwrap();
+    preload(vm, data::preload_script()).exec().unwrap();
     preload(vm, arithmetic::preload_script()).exec().unwrap();
     preload(vm, logical::preload_script()).exec().unwrap();
     preload(vm, bit::preload_script()).exec().unwrap();

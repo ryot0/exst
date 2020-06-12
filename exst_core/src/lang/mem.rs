@@ -603,6 +603,17 @@ impl<T> EnvironmentStack<T> {
     pub fn get(&self, base: EnvironmentStackAddress, pos: EnvironmentStackRelativeAddress) -> Result<Rc<Value<T>>,EnvironmentStackErrorReason> {
         self.0.get(From::from(base.0 + pos.0)).map_err(From::from)
     }
+
+    /// 指定下位置の値を設定
+    /// 
+    /// # Arguments
+    /// * base - 基準アドレス
+    /// * pos - 基準アドレスからの相対アドレス
+    /// * value - 値
+    /// 
+    pub fn set(&mut self, base: EnvironmentStackAddress, pos: EnvironmentStackRelativeAddress, value: Rc<Value<T>>) -> Result<Rc<Value<T>>,EnvironmentStackErrorReason> {
+        self.0.set(From::from(base.0 + pos.0), value).map_err(From::from)
+    }
 }
 impl<T> fmt::Display for EnvironmentStack<T> 
     where T: fmt::Display
