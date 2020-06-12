@@ -16,7 +16,7 @@ pub fn initialize<V>(vm: &mut V)
     vm.define_primitive_word("see".to_string(), false, String::from("\"word name\" -- ; dump word code"), dump_word);
     vm.define_primitive_word("dump-all-word".to_string(), false, String::from(" -- ; dump all word code"), dump_all_word);
     vm.define_primitive_word("words".to_string(), false, String::from(" -- ; dump dictionary"), dump_dictionary);
-    vm.define_primitive_word("dump-stack".to_string(), false, String::from(" -- ; dump data stack"), dump_stack);
+    vm.define_primitive_word(".s".to_string(), false, String::from(" -- ; dump data stack"), dump_stack);
     vm.define_primitive_word("dump-env".to_string(), false, String::from(" -- ; dump environment stack"), dump_env);
     vm.define_primitive_word("dump-controlflow-stack".to_string(), false, String::from(" -- ; dump controlflow stack"), dump_controlflow_stack);
 }
