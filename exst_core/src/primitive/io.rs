@@ -16,7 +16,9 @@ pub fn initialize<V>(vm: &mut V)
 /// 起動時に実行するスクリプト
 pub fn preload_script() -> &'static str
 {r#"
-
+    : .cr ( a -- ; print a cr )
+        . cr
+    ;
 "#}
 
 /// スタックトップの印字
