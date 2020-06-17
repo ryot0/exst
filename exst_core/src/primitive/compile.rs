@@ -183,10 +183,8 @@ where E: std::fmt::Debug
             v.code_buffer_mut().push(compile_call_code_address(callee));
         } else {
             let callee = w.code();
-            let compile = v.word_dictionary().find_word(&"compile,".to_string())?;
-            let compile_adr = compile.code();
             v.code_buffer_mut().push(compile_push_value(Rc::new(Value::CodeAddress(callee))));
-            v.code_buffer_mut().push(compile_call_code_address(compile_adr));
+            v.code_buffer_mut().push(compile_call_primitive(compile));
         }
         Result::Ok(())
     })

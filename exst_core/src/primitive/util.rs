@@ -69,6 +69,19 @@ pub fn call_iifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     })
 }
 
+/// ( adr int -- adr )のワードの呼び出し
+pub fn call_aafa<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
+    where V: VmManipulation,
+          F: Fn(usize,usize) -> Value<V::ExtraValueType>,
+          E: std::fmt::Debug
+{
+    call_xxfr(vm, |lhs,rhs|{
+        let lv = (*lhs).try_into_usize()?;
+        let rv = (*rhs).try_into_usize()?;
+        Result::Ok(f(lv, rv))
+    })
+}
+
 /// ( int -- int )のワードの呼び出し
 pub fn call_ifi<V,E,F>(vm: &mut V, f: F) -> Result<(),VmErrorReason<E>>
     where V: VmManipulation,

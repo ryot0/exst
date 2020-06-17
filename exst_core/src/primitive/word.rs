@@ -8,6 +8,7 @@ use super::super::lang::word::*;
 use super::super::lang::value::*;
 use super::util;
 use std::rc::Rc;
+use std::convert;
 
 /// ワード定義関連ワードを登録
 pub fn initialize<V>(vm: &mut V)
@@ -39,11 +40,10 @@ pub fn preload_script() -> &'static str
     ; immediate
 
     : does> ( -- ; does )
-        cdp
-        __dummy_instruction__
+        cdp __dummy_instruction__
         postpone does
-        __return__
-        cdp [compile] literal
+        postpone ;
+        :noname [compile] literal
         instruction-at
     ; immediate
 "#}
@@ -55,6 +55,9 @@ where E: std::fmt::Debug
     util::call_with_name(vm, |v, name|{
         let here = v.code_buffer().here();
         v.word_dictionary_mut().reserve_word_def(name, Word::new(here));
+        v.controlflow_stack_mut().push(Rc::new(Value::CodeAddress(here)));
+        v.code_buffer_mut().push(compile_nop());
+        v.code_buffer_mut().push(compile_nop());
         v.set_state(VmState::Compilation);
         Result::Ok(())
     })
@@ -65,7 +68,11 @@ fn noname<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
     let here = vm.code_buffer().here();
+    vm.word_dictionary_mut().reserve_word_def(String::from(""), Word::new(here));
     vm.data_stack_mut().push(Rc::new(Value::CodeAddress(here)));
+    vm.controlflow_stack_mut().push(Rc::new(Value::CodeAddress(here)));
+    vm.code_buffer_mut().push(compile_nop());
+    vm.code_buffer_mut().push(compile_nop());
     vm.set_state(VmState::Compilation);
     Result::Ok(())
 }
@@ -77,18 +84,39 @@ where E: std::fmt::Debug
     util::call_with_name(vm, |v, name|{
         let here = v.code_buffer().here();
         v.word_dictionary_mut().reserve_word_def(name, Word::new(here));
+        v.controlflow_stack_mut().push(Rc::new(Value::CodeAddress(here)));
+        v.code_buffer_mut().push(compile_nop());
+        v.code_buffer_mut().push(compile_nop());
         v.set_state(VmState::RecursableCompilation);
         Result::Ok(())
     })
+}
+
+/// alloc_env
+fn alloc_env<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
+where E: std::fmt::Debug
+{
+    let size = vm.data_stack_mut().pop()?;
+    let size = size.try_into_usize()?;
+    vm.env_stack_mut().allocate(size);
+    Result::Ok(())
 }
 
 /// セミコロン定義
 fn semicolon<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
+    let adr = vm.controlflow_stack_mut().pop()?;
+    let adr: &CodeAddress = (*adr).try_into()?;
+    let len = convert::TryInto::try_into(vm.local_dictionary().len())?;
+    if len > 0 {
+        vm.code_buffer_mut().set(*adr, compile_push_value(Rc::new(Value::IntValue(len))))?;
+        vm.code_buffer_mut().set(adr.next(), compile_call_primitive(alloc_env))?;
+    }
     vm.code_buffer_mut().push(compile_return());
     vm.code_buffer_mut().push(compile_word_terminator());
     vm.word_dictionary_mut().complate_word_def()?;
+    vm.local_dictionary_mut().clear();
     vm.set_state(VmState::Interpretation);
     Result::Ok(())
 }
@@ -175,7 +203,7 @@ where E: std::fmt::Debug
     Result::Ok(())
 }
 
-/// does>
+/// does
 fn does<V: VmManipulation,E>(vm: &mut V) -> Result<(),VmErrorReason<E>>
 where E: std::fmt::Debug
 {
@@ -183,7 +211,8 @@ where E: std::fmt::Debug
     let adr: &CodeAddress = (*top).try_into()?;
     vm.code_buffer_mut().pop()?; //word terminator
     vm.code_buffer_mut().pop()?; //return
-    vm.code_buffer_mut().push(compile_jump(*adr));
+    vm.code_buffer_mut().push(compile_call_code_address(*adr));
+    vm.code_buffer_mut().push(compile_return());
     vm.code_buffer_mut().push(compile_word_terminator());
     Result::Ok(())
 }

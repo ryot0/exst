@@ -212,6 +212,9 @@ impl EnvironmentStackRelativeAddress {
     pub fn next(&self) -> Self {
         EnvironmentStackRelativeAddress(self.0 + 1)
     }
+    pub fn from_call_frame(base: EnvironmentStackAddress, adr: EnvironmentStackAddress) -> Self {
+        EnvironmentStackRelativeAddress(adr.0 - base.0)
+    }
 }
 impl From<usize> for EnvironmentStackRelativeAddress {
     fn from(v: usize) -> Self {
@@ -336,6 +339,11 @@ pub trait ValueTryInto<T> {
 /// 
 #[derive(Debug)]
 pub struct TypeMismatchError(pub &'static str, pub &'static str);
+impl From<BufferAddressErrorReason> for TypeMismatchError {
+    fn from(_: BufferAddressErrorReason) -> Self {
+        Self("Address", "InvalidAddress")
+    }
+}
 ///////////////////////////////////////////////////////////
 /// 値
 /// 
@@ -434,6 +442,17 @@ impl<T> ValueTryInto<DataAddress> for Value<T>
         }
     }
 }
+impl<T> ValueTryInto<EnvironmentStackRelativeAddress> for Value<T>
+    where T: fmt::Display
+{
+    type Error = TypeMismatchError;
+    fn try_into(&self) -> Result<&EnvironmentStackRelativeAddress,Self::Error> {
+        match self {
+            Value::EnvAddress(v) => Result::Ok(v),
+            _ => Result::Err(TypeMismatchError(data_address_type_name(), self.type_name())),
+        }
+    }
+}
 impl<T> Value<T>
     where T: fmt::Display
 {
@@ -443,7 +462,19 @@ impl<T> Value<T>
             Value::IntValue(v) => {
                 Result::Ok(*v as usize)
             },
-            _ => Result::Err(TypeMismatchError(int_type_name(), self.type_name())),
+            Value::CodeAddress(v) => {
+                let adr = v.0.adr()?;
+                Result::Ok(adr)
+            },
+            Value::DataAddress(v) => {
+                let adr = v.0.adr()?;
+                Result::Ok(adr)
+            },
+            Value::EnvAddress(v) => {
+                let adr = v.0;
+                Result::Ok(adr)
+            },
+            _ => Result::Err(TypeMismatchError("INT|Address", self.type_name())),
         }
     }
 

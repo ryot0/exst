@@ -137,6 +137,11 @@ impl<E: fmt::Debug> From<TypeMismatchError> for VmErrorReason<E> {
         Self::TypeMismatchError(e)
     }
 }
+impl<E: fmt::Debug> From<std::num::TryFromIntError> for VmErrorReason<E> {
+    fn from(_: std::num::TryFromIntError) -> Self {
+        Self::TypeMismatchError(TypeMismatchError("?", "INT"))
+    }
+}
 
 ///////////////////////////////////////////////////////////
 /// Vm実行trait

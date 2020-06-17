@@ -587,6 +587,9 @@ impl<T> EnvironmentStack<T> {
         let r = self.0.rollback(address.0)?;
         Result::Ok(From::from(r))
     }
+    pub fn allocate(&mut self, size: usize) -> EnvironmentStackAddress {
+        From::from(self.0.allocate(size))
+    }
     pub fn here(&self) -> EnvironmentStackAddress {
         From::from(self.0.here())
     }

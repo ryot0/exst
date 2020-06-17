@@ -13,6 +13,7 @@ mod debug;
 mod compile;
 mod word;
 mod exception;
+mod environment;
 mod controlflow;
 mod util;
 
@@ -52,6 +53,7 @@ pub fn initialize<V>(vm: &mut V)
     arithmetic::initialize(vm);
     logical::initialize(vm);
     bit::initialize(vm);
+    environment::initialize(vm);
     controlflow::initialize(vm);
     exception::initialize(vm);
     io::initialize(vm);
@@ -66,6 +68,7 @@ pub fn initialize<V>(vm: &mut V)
     preload(vm, arithmetic::preload_script()).exec().unwrap();
     preload(vm, logical::preload_script()).exec().unwrap();
     preload(vm, bit::preload_script()).exec().unwrap();
+    preload(vm, environment::preload_script()).exec().unwrap();
     preload(vm, controlflow::preload_script()).exec().unwrap();
     preload(vm, exception::preload_script()).exec().unwrap();
     preload(vm, io::preload_script()).exec().unwrap();
